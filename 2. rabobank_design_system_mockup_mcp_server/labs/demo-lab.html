@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Design Styling MCP Demo Lab</title>
+    <style>
+        :root {
+            --ink: #0f172a;
+            --muted: #475569;
+            --line: #d7e1ee;
+            --bg: #f6f8fb;
+            --surface: rgba(255, 255, 255, 0.94);
+            --primary: #0f766e;
+            --secondary: #14b8a6;
+            --accent: #7c3aed;
+            --warm: #ea580c;
+            --shadow: 0 22px 46px rgba(15, 23, 42, 0.12);
+            --radius: 18px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: var(--ink);
+            line-height: 1.58;
+            background:
+                radial-gradient(circle at top left, rgba(20, 184, 166, 0.15), transparent 28%),
+                radial-gradient(circle at top right, rgba(124, 58, 237, 0.11), transparent 24%),
+                linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
+        }
+
+        .page {
+            width: min(1560px, 96vw);
+            margin: 0 auto;
+            padding: 34px 0 54px;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1fr 190px;
+            gap: 28px;
+            align-items: start;
+            margin-bottom: 22px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(2.6rem, 5vw, 5.1rem);
+            line-height: 0.92;
+            letter-spacing: -0.07em;
+            color: var(--ink);
+        }
+
+        .subtitle {
+            max-width: 1020px;
+            margin: 16px 0 0;
+            font-size: clamp(1rem, 1.5vw, 1.28rem);
+            color: var(--muted);
+        }
+
+        .meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 22px;
+        }
+
+        .pill {
+            border: 1px solid var(--line);
+            background: #fff;
+            border-radius: 999px;
+            padding: 9px 14px;
+            color: var(--primary);
+            font-weight: 700;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+        }
+
+        .logo {
+            display: grid;
+            gap: 10px;
+            justify-items: center;
+            padding: 18px;
+            border-radius: 22px;
+            border: 1px solid rgba(15, 118, 110, 0.18);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(236, 254, 255, 0.8));
+            box-shadow: var(--shadow);
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        .logo-mark {
+            width: 94px;
+            height: 94px;
+            border-radius: 24px;
+            display: grid;
+            place-items: center;
+            color: white;
+            font-size: 1.75rem;
+            letter-spacing: 0.06em;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            box-shadow: 0 16px 34px rgba(15, 118, 110, 0.3);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 290px 1fr;
+            gap: 22px;
+            align-items: start;
+        }
+
+        nav {
+            position: sticky;
+            top: 18px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 18px;
+        }
+
+        nav h2 {
+            margin: 0 0 12px;
+            color: var(--primary);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        nav a {
+            display: block;
+            text-decoration: none;
+            color: var(--ink);
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-weight: 650;
+            font-size: 0.95rem;
+        }
+
+        nav a:hover {
+            background: #effcfb;
+            color: var(--primary);
+        }
+
+        section {
+            margin-bottom: 22px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            backdrop-filter: blur(12px);
+        }
+
+        .card h2 {
+            margin: 0 0 14px;
+            color: var(--primary);
+            letter-spacing: -0.03em;
+            text-transform: uppercase;
+            font-size: 1.26rem;
+        }
+
+        .card h3 {
+            margin: 20px 0 10px;
+            color: var(--ink);
+            letter-spacing: -0.02em;
+            font-size: 1.08rem;
+        }
+
+        .lead {
+            font-size: 1.11rem;
+            color: var(--muted);
+            max-width: 1080px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .mini-card {
+            background: #fff;
+            border: 1px solid #dbe7f5;
+            border-radius: 16px;
+            padding: 18px;
+        }
+
+        .mini-card.green {
+            background: linear-gradient(180deg, #fff, #ecfdf5);
+            border-color: #bdebd0;
+        }
+
+        .mini-card.orange {
+            background: linear-gradient(180deg, #fff, #fff7ed);
+            border-color: #fed7aa;
+        }
+
+        .mini-card.purple {
+            background: linear-gradient(180deg, #fff, #f5f3ff);
+            border-color: #ddd6fe;
+        }
+
+        .mini-card h3 {
+            margin-top: 0;
+        }
+
+        .icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            font-size: 1.35rem;
+            background: #effcfb;
+            color: var(--primary);
+            margin-bottom: 12px;
+            font-weight: 900;
+        }
+
+        .green .icon {
+            background: #ecfdf5;
+            color: #15803d;
+        }
+
+        .orange .icon {
+            background: #fff7ed;
+            color: var(--warm);
+        }
+
+        .purple .icon {
+            background: #f5f3ff;
+            color: var(--accent);
+        }
+
+        .diagram {
+            display: grid;
+            grid-template-columns: 1fr 0.32fr 1fr 0.32fr 1fr;
+            gap: 12px;
+            align-items: center;
+            margin-top: 18px;
+        }
+
+        .node {
+            min-height: 150px;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: linear-gradient(180deg, #ffffff, #f8fbff);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 18px;
+        }
+
+        .node strong {
+            color: var(--ink);
+            font-size: 1.05rem;
+        }
+
+        .node .emoji {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .arrow {
+            text-align: center;
+            color: var(--secondary);
+            font-size: 2.2rem;
+            font-weight: 900;
+        }
+
+        .subtext {
+            color: var(--muted);
+            font-size: 0.94rem;
+            line-height: 1.45;
+        }
+
+        .step-list {
+            counter-reset: steps;
+            display: grid;
+            gap: 12px;
+        }
+
+        .step {
+            counter-increment: steps;
+            display: grid;
+            grid-template-columns: 42px 1fr;
+            gap: 14px;
+            padding: 15px;
+            background: #fff;
+            border: 1px solid #dbe7f5;
+            border-radius: 14px;
+            align-items: start;
+        }
+
+        .step::before {
+            content: counter(steps);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            font-weight: 900;
+        }
+
+        .step strong {
+            display: block;
+            color: var(--ink);
+            margin-bottom: 4px;
+        }
+
+        .code {
+            background: #08111f;
+            color: #dbeafe;
+            border-radius: 13px;
+            padding: 16px;
+            font-family: "Cascadia Code", Consolas, monospace;
+            font-size: 0.88rem;
+            overflow: auto;
+            line-height: 1.55;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+            margin: 12px 0;
+            white-space: pre-wrap;
+        }
+
+        .lab {
+            border-left: 6px solid var(--warm);
+            background: linear-gradient(180deg, #fff, #fff8f1);
+        }
+
+        .lab h2 {
+            color: var(--warm);
+        }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin: 12px 0 0;
+            display: grid;
+            gap: 8px;
+        }
+
+        .checklist li {
+            padding: 10px 12px;
+            background: #fff;
+            border: 1px solid #dbe7f5;
+            border-radius: 12px;
+        }
+
+        .checklist li::before {
+            content: "OK";
+            color: #15803d;
+            font-weight: 900;
+            margin-right: 10px;
+        }
+
+        .warning {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .warning strong {
+            color: var(--warm);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+            border-radius: 14px;
+            margin-top: 12px;
+            background: white;
+        }
+
+        th,
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #dbe7f5;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #effcfb;
+            color: var(--primary);
+        }
+
+        tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .footer {
+            text-align: center;
+            color: var(--muted);
+            margin-top: 26px;
+            font-size: 0.95rem;
+        }
+
+        .content-link {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        @media print {
+            nav {
+                display: none;
+            }
+
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            body {
+                background: white;
+            }
+
+            .card,
+            .mini-card,
+            .step {
+                box-shadow: none;
+                break-inside: avoid;
+            }
+
+            section {
+                break-inside: avoid;
+            }
+        }
+
+        @media (max-width: 1100px) {
+
+            .hero,
+            .layout,
+            .grid-2,
+            .grid-3,
+            .grid-4 {
+                grid-template-columns: 1fr;
+            }
+
+            nav {
+                position: static;
+            }
+
+            .diagram {
+                grid-template-columns: 1fr;
+            }
+
+            .arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="page">
+        <header class="hero">
+            <div>
+                <h1>Design Styling MCP<br />Demo Lab</h1>
+                <p class="subtitle">
+                    In this lab you extend the design demo into a more useful MCP server. You add a richer component,
+                    expand the token system, document composition rules, and build a better preview flow so Copilot can
+                    return design output that is easier to review and reuse.
+                </p>
+                <div class="meta-row">
+                    <span class="pill">Audience: Rabobank developers</span>
+                    <span class="pill">Format: Hands-on lab</span>
+                    <span class="pill">Focus: FastMCP, design tokens, component composition</span>
+                    <span class="pill">Outcome: Stronger design system responses through MCP</span>
+                </div>
+            </div>
+            <div class="logo">
+                <div class="logo-mark">DS</div>
+                Demo lab
+            </div>
+        </header>
+
+        <div class="layout">
+            <nav>
+                <h2>Lab contents</h2>
+                <a href="#overview">1. Overview</a>
+                <a href="#goal">2. Learning goal</a>
+                <a href="#architecture">3. What you extend</a>
+                <a href="#flow">4. Lab flow</a>
+                <a href="#scenarios">5. Build directions</a>
+                <a href="#tasks">6. Implementation tasks</a>
+                <a href="#deliverables">7. What to complete</a>
+                <a href="#prompts">8. Demo prompts</a>
+                <a href="#criteria">9. Success criteria</a>
+            </nav>
+
+            <div>
+                <section id="overview" class="card lab">
+                    <h2>1. Overview</h2>
+                    <p class="lead">
+                        The current server already returns component bundles and a small token set. In this lab you make
+                        that output more useful for real development work: add a richer component, make theming more
+                        explicit, document how components should be combined, and return previews that show the result
+                        in context.
+                    </p>
+
+                    <div class="grid-4" style="margin-top:18px;">
+                        <div class="mini-card">
+                            <div class="icon">A</div>
+                            <h3>Component depth</h3>
+                            <p>Add a richer component with nested structure, state, and responsive behaviour.</p>
+                        </div>
+                        <div class="mini-card green">
+                            <div class="icon">B</div>
+                            <h3>Token system</h3>
+                            <p>Expand the theme set so the server can return more than one visual direction.</p>
+                        </div>
+                        <div class="mini-card orange">
+                            <div class="icon">C</div>
+                            <h3>Documentation</h3>
+                            <p>Add guidance for composition, accessibility, or motion so outputs stay consistent.</p>
+                        </div>
+                        <div class="mini-card purple">
+                            <div class="icon">D</div>
+                            <h3>Previewing</h3>
+                            <p>Make it easy to assemble the final design bundle into a polished preview page.</p>
+                        </div>
+                    </div>
+
+                    <h3>What this server should help you do</h3>
+                    <p>
+                        The goal is to move from a vague UI request to a concrete, reusable implementation. That means
+                        finding the right component, understanding its structure, applying the correct token set,
+                        reading the relevant guidance, and returning a preview page that is useful for review or
+                        handoff.
+                    </p>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Example prompt</th>
+                                <th>What it should return</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Search for the best component for a launch story and show me the outline.</td>
+                                <td>A ranked component match with structure notes and a recommended follow-up prompt.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Give me the same component in a sunset theme and explain the design choice.</td>
+                                <td>HTML, CSS, and JS for the component plus the selected token set and a short
+                                    explanation.</td>
+                            </tr>
+                            <tr>
+                                <td>Build a story page for the feature panel and include composition guidance.</td>
+                                <td>A polished preview page that combines the component, tokens, outline, and
+                                    documentation topic.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section id="goal" class="card">
+                    <h2>2. Learning goal</h2>
+                    <p>
+                        By the end of the lab you should understand how this server models components, documentation,
+                        themes, and preview helpers as separate MCP outputs. The final result should not only work, but
+                        also show a clear design decision that Copilot can explain and reuse.
+                    </p>
+
+                    <h3>Expected learning outcomes</h3>
+                    <ul class="checklist">
+                        <li>Add a new component that is more complex than a single button or card.</li>
+                        <li>Extend the design tokens with an additional theme or variant.</li>
+                        <li>Create a documentation topic that teaches composition, hierarchy, or accessibility.</li>
+                        <li>Build a preview helper that combines a component with supporting context.</li>
+                        <li>Validate the extension through MCP prompts and the returned HTML/CSS/JS bundles.</li>
+                    </ul>
+
+                    <div class="warning">
+                        <strong>Keep the scope tight:</strong> the strongest solutions are small, coherent, and clearly
+                        designed, not crowded with unrelated components or styles.
+                    </div>
+                </section>
+
+                <section id="architecture" class="card">
+                    <h2>3. What you extend</h2>
+                    <p>
+                        Start with the existing catalog, then add one deeper layer at a time: a new component, a wider
+                        token set, better guidance, and a more complete preview flow. That mirrors how a design system
+                        grows in practice.
+                    </p>
+
+                    <div class="diagram">
+                        <div class="node">
+                            <div class="emoji">C</div>
+                            <strong>Component catalog</strong>
+                            <span class="subtext">list_components() returns the available building blocks</span>
+                        </div>
+                        <div class="arrow">-&gt;</div>
+                        <div class="node">
+                            <div class="emoji">T</div>
+                            <strong>Token system</strong>
+                            <span class="subtext">get_design_tokens() exposes colors, radius, and shadow
+                                decisions</span>
+                        </div>
+                        <div class="arrow">-&gt;</div>
+                        <div class="node">
+                            <div class="emoji">P</div>
+                            <strong>Preview helpers</strong>
+                            <span class="subtext">build_component_page() turns output into a usable demo page</span>
+                        </div>
+                    </div>
+
+                    <h3>Files you are expected to touch</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>File</th>
+                                <th>Role in the lab</th>
+                                <th>Typical change</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>main.py</td>
+                                <td>Contains the demo components, docs, tokens, and preview tools.</td>
+                                <td>Add a new component, new topic, new theme, or a richer page builder.</td>
+                            </tr>
+                            <tr>
+                                <td>README.md</td>
+                                <td>Explains what the server does and how to run it.</td>
+                                <td>Add the lab entry point and sample prompts for the advanced scenario.</td>
+                            </tr>
+                            <tr>
+                                <td>pyproject.toml</td>
+                                <td>Defines the runnable package metadata.</td>
+                                <td>Usually unchanged, but useful if you split helpers into modules later.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section id="flow" class="card lab">
+                    <h2>4. Lab flow</h2>
+                    <p class="lead">
+                        Work from the content outward. Add the design decision first, then give it data, then improve
+                        the
+                        preview and the prompt experience.
+                    </p>
+                    <div class="step-list">
+                        <div class="step">
+                            <div>
+                                <strong>Inspect the current design language</strong>
+                                Review the existing component names, the token set, and the documentation topics so the
+                                new
+                                work aligns with the current demo style.
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div>
+                                <strong>Add one richer component</strong>
+                                Choose a component that has multiple parts, such as a feature panel, hero block, or
+                                callout
+                                module with supporting text and actions.
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div>
+                                <strong>Expand the token set</strong>
+                                Add a theme variant that changes the visual mood enough to prove the preview page is
+                                driven by
+                                tokens rather than hardcoded colors.
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div>
+                                <strong>Add documentation for composition</strong>
+                                Create a topic that explains when to use the component, how to combine it with other
+                                pieces,
+                                and what accessibility rules matter.
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div>
+                                <strong>Build and validate the preview flow</strong>
+                                Return a polished page or story view so Copilot can evaluate the component in context,
+                                not just
+                                as isolated snippets.
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top:20px;">Concrete build targets</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tool</th>
+                                <th>What the developer should build</th>
+                                <th>Done when</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>search_components</code></td>
+                                <td>Find the right component by query terms like launch, hero, panel, navbar, or action.
+                                </td>
+                                <td>The tool returns a ranked match list with a next-step hint.</td>
+                            </tr>
+                            <tr>
+                                <td><code>get_component_outline</code></td>
+                                <td>Expose the component structure in a short, readable format for agents.</td>
+                                <td>The response includes parts, notes, and a suggested prompt.</td>
+                            </tr>
+                            <tr>
+                                <td><code>build_component_page</code></td>
+                                <td>Return a complete preview page that respects the selected theme and outline.</td>
+                                <td>The HTML renders with chips, notes, and the component markup.</td>
+                            </tr>
+                            <tr>
+                                <td><code>build_component_story_page</code></td>
+                                <td>Combine a component, a theme, and a documentation topic into a richer review page.
+                                </td>
+                                <td>The page shows the prompt, the outline, the guidance, and the preview.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section id="scenarios" class="card">
+                    <h2>5. Build directions</h2>
+                    <p>Complete the first three items as the core lab. Use the fourth if you finish early or want a
+                        stronger end result.</p>
+
+                    <div class="grid-2">
+                        <div class="mini-card">
+                            <h3>Build A: Feature panel component</h3>
+                            <p>
+                                Add a richer component, such as a feature panel or hero block, that includes an eyebrow,
+                                title, supporting text, and one or more actions.
+                            </p>
+                            <p>
+                                Goal: make it discoverable through <code>search_components</code>, document its
+                                structure with <code>get_component_outline</code>, and expose it through
+                                <code>get_component_bundle</code>.
+                            </p>
+                        </div>
+                        <div class="mini-card green">
+                            <h3>Build B: Theme expansion</h3>
+                            <p>
+                                Add a second or third token theme so the server can generate a different visual identity
+                                for the
+                                same component.
+                            </p>
+                            <p>
+                                Goal: update <code>get_design_tokens</code> with a clearly distinct palette and shadow
+                                treatment.
+                            </p>
+                        </div>
+                        <div class="mini-card orange">
+                            <h3>Build C: Composition guidance</h3>
+                            <p>
+                                Add documentation for how the component should be combined with other blocks, including
+                                spacing,
+                                hierarchy, and focus states.
+                            </p>
+                            <p>
+                                Goal: extend <code>get_design_documentation</code> with a new topic such as
+                                <code>composition</code> or <code>motion</code>.
+                            </p>
+                        </div>
+                        <div class="mini-card purple">
+                            <h3>Build D: Story page builder</h3>
+                            <p>
+                                Create a new helper that turns a component, theme, and documentation topic into one
+                                polished
+                                preview page for demos or handoff.
+                            </p>
+                            <p>
+                                Goal: return a complete HTML shell through <code>build_component_story_page</code> that
+                                wraps the component and explains the design choices.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="tasks" class="card">
+                    <h2>6. Implementation tasks</h2>
+                    <p class="lead">Treat these as concrete implementation slices. Each task should end in a usable MCP
+                        response that Copilot can call and reuse immediately.</p>
+
+                    <div class="grid-2">
+                        <div class="mini-card">
+                            <h3>Task 1: Add a new component</h3>
+                            <p>
+                                Add a new component entry in <code>COMPONENTS</code> and include a richer HTML
+                                structure,
+                                component-scoped CSS, and a small JavaScript enhancement.
+                            </p>
+                            <p><strong>Expected developer output:</strong> a feature panel with eyebrow, body, primary
+                                CTA, and supporting link.</p>
+                            <pre class="code">&quot;feature-panel&quot;: {
+  &quot;name&quot;: &quot;Feature Panel&quot;,
+  &quot;purpose&quot;: &quot;Showcase a product or workflow with supporting actions.&quot;,
+  &quot;variant&quot;: &quot;composed&quot;,
+  &quot;html&quot;: &quot;...&quot;,
+  &quot;css&quot;: &quot;...&quot;,
+  &quot;js&quot;: &quot;...&quot;,
+  &quot;notes&quot;: [&quot;Use on product pages.&quot;, &quot;Pair with a short action label.&quot;]
+}</pre>
+                        </div>
+                        <div class="mini-card green">
+                            <h3>Task 2: Add a new documentation topic</h3>
+                            <p>
+                                Expand <code>DOCUMENTATION_TOPICS</code> with a topic that explains composition rules or
+                                motion
+                                guidance.
+                            </p>
+                            <p><strong>Expected developer output:</strong> a topic that helps Copilot explain how the
+                                feature panel and navbar work together.</p>
+                            <pre class="code">&quot;composition&quot;: {
+  &quot;title&quot;: &quot;Composition Guidance&quot;,
+  &quot;summary&quot;: &quot;Use the demo components together without losing hierarchy.&quot;,
+  &quot;guidelines&quot;: [
+    &quot;Keep one primary action.&quot;,
+    &quot;Balance text and whitespace.&quot;,
+    &quot;Maintain visible focus states.&quot;
+  ],
+  &quot;example_prompt&quot;: &quot;Explain how to combine a hero and a button component.&quot;
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="grid-2" style="margin-top:18px;">
+                        <div class="mini-card orange">
+                            <h3>Task 3: Expand the token system</h3>
+                            <p>
+                                Add a new token theme in <code>get_design_tokens</code> so the same component can ship
+                                in a
+                                different visual mood.
+                            </p>
+                            <p><strong>Expected developer output:</strong> at least one new theme that changes
+                                background, accents, and shadow style.</p>
+                            <pre class="code">&quot;sunset&quot;: {
+  &quot;background&quot;: &quot;#fff7ed&quot;,
+  &quot;surface&quot;: &quot;#ffffff&quot;,
+  &quot;text&quot;: &quot;#1f2937&quot;,
+  &quot;muted&quot;: &quot;#6b7280&quot;,
+  &quot;primary&quot;: &quot;#c2410c&quot;,
+  &quot;secondary&quot;: &quot;#fb923c&quot;,
+  &quot;radius&quot;: &quot;1rem&quot;,
+  &quot;shadow&quot;: &quot;0 22px 45px rgba(194, 65, 12, 0.18)&quot;
+}</pre>
+                        </div>
+                        <div class="mini-card purple">
+                            <h3>Task 4: Build a story page helper</h3>
+                            <p>
+                                Add a new tool that combines a component bundle with a selected theme and doc topic into
+                                one
+                                clean preview page.
+                            </p>
+                            <p><strong>Expected developer output:</strong> a story page that shows the prompt, the
+                                outline, the guidance, and the rendered component.</p>
+                            <pre class="code">@mcp.tool()
+def build_component_story_page(component_id: str, theme: str = &quot;ocean&quot;, topic: str = &quot;overview&quot;) -&gt; dict[str, str]:
+    &quot;&quot;&quot;Return a complete design story page with component, tokens, and guidance.&quot;&quot;&quot;
+    ...</pre>
+                        </div>
+                    </div>
+
+                    <div class="warning" style="margin-top:18px;">
+                        <strong>Design note:</strong> avoid adding random extra components. The best lab submissions
+                        show a
+                        clear design system decision, not a larger pile of snippets.
+                    </div>
+                </section>
+
+                <section id="deliverables" class="card lab">
+                    <h2>7. What to complete</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Part</th>
+                                <th>What to complete</th>
+                                <th>How to verify it</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>New component</td>
+                                <td>A more advanced component has been added to the catalog.</td>
+                                <td>The returned bundle contains meaningful HTML, CSS, and JS.</td>
+                            </tr>
+                            <tr>
+                                <td>New theme</td>
+                                <td>At least one additional token theme exists.</td>
+                                <td>The same component looks different but still coherent.</td>
+                            </tr>
+                            <tr>
+                                <td>New documentation</td>
+                                <td>A topic for composition, accessibility, or motion has been added.</td>
+                                <td>The example prompt returns guidance with practical rules.</td>
+                            </tr>
+                            <tr>
+                                <td>New preview helper</td>
+                                <td>A tool produces a richer preview page or story view.</td>
+                                <td>The generated HTML makes the design easier to review.</td>
+                            </tr>
+                            <tr>
+                                <td>README update</td>
+                                <td>The lab and run commands are documented.</td>
+                                <td>Another developer can run the lab and understand the setup without guessing.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section id="prompts" class="card">
+                    <h2>8. Demo prompts</h2>
+                    <p>Use prompts like these after you finish the implementation.</p>
+
+                    <div class="grid-2">
+                        <div class="mini-card">
+                            <h3>Prompt 1</h3>
+                            <p>Search for the best component for a launch story, then return the outline and bundle for
+                                the match.</p>
+                        </div>
+                        <div class="mini-card green">
+                            <h3>Prompt 2</h3>
+                            <p>Give me the same component in a sunset theme and explain why the palette works for that
+                                layout.</p>
+                        </div>
+                        <div class="mini-card orange">
+                            <h3>Prompt 3</h3>
+                            <p>Show me documentation for composition and explain how to combine the feature panel with a
+                                navbar.</p>
+                        </div>
+                        <div class="mini-card purple">
+                            <h3>Prompt 4</h3>
+                            <p>Build a story page for the new component using the midnight or sunset theme and summarize
+                                the design choices.</p>
+                        </div>
+                    </div>
+
+                    <h3>Suggested validation flow</h3>
+                    <pre class="code">uv sync
+uv run design-mcp
+
+Prompt the server for:
+1. the new component bundle
+2. the new documentation topic
+3. the new token theme
+4. the story page helper output</pre>
+                </section>
+
+                <section id="criteria" class="card">
+                    <h2>9. Success criteria</h2>
+
+                    <div class="grid-3">
+                        <div class="mini-card">
+                            <div class="icon">1</div>
+                            <h3>Clear design intent</h3>
+                            <p>The new work feels like part of one design system, not a collection of unrelated
+                                snippets.
+                            </p>
+                        </div>
+                        <div class="mini-card green">
+                            <div class="icon">2</div>
+                            <h3>Good layering</h3>
+                            <p>Components, docs, tokens, and preview helpers each do one job and do it cleanly.</p>
+                        </div>
+                        <div class="mini-card orange">
+                            <div class="icon">3</div>
+                            <h3>Useful output</h3>
+                            <p>Copilot can use the new bundle in a way that is ready for review, not just for display.
+                            </p>
+                        </div>
+                    </div>
+
+                    <h3>Validation checklist</h3>
+                    <ul class="checklist">
+                        <li>The new component has a meaningful structure and responsive CSS.</li>
+                        <li>The token theme changes the visual tone without breaking readability.</li>
+                        <li>The documentation topic gives practical guidance instead of generic advice.</li>
+                        <li>The preview helper makes the component easier to evaluate in context.</li>
+                        <li>The lab can be run from the folder without extra setup guesses.</li>
+                    </ul>
+                </section>
+
+                <p class="footer">
+                    Design Styling MCP Demo Lab - Built for the compact FastMCP design
+                    server
+                </p>
+                <p class="footer">
+                    Open the server README at <a class="content-link" href="README.md">README.md</a> or run the demo
+                    with
+                    <a class="content-link" href="README.md">design-mcp</a>.
+                </p>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

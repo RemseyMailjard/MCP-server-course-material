@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "rabo-mortgage-demo": {
+      "type": "stdio",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-Command",
+        "& {cd 'C:\\Users\\PC\\Desktop\\MCP-server course material\\1. solution_lab1\\rabo-mcp-demo'; & 'C:\\Users\\PC\\AppData\\Local\\Microsoft\\WinGet\\Packages\\astral-sh.uv_Microsoft.WinGet.Source_8wekyb3d8bbwe\\uv.exe' run python main.py}"
+      ]
+    }
+  }
+}

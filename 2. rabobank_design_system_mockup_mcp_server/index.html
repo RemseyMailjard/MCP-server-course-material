@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Maximale hypotheek berekenen</title>
+	<style>
+		:root {
+			--bg: #f7f4ef;
+			--bg-accent: #ece7df;
+			--surface: rgba(255, 255, 255, 0.88);
+			--surface-strong: #ffffff;
+			--text: #1d2a35;
+			--muted: #5a6874;
+			--line: rgba(29, 42, 53, 0.12);
+			--accent: #0f766e;
+			--accent-soft: #14b8a6;
+			--accent-warm: #d97706;
+			--result-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(236, 254, 255, 0.94));
+			--shadow-soft: 0 18px 40px rgba(29, 42, 53, 0.09);
+			--shadow-strong: 0 24px 52px rgba(15, 118, 110, 0.16);
+			--radius-sm: 1rem;
+			--radius-md: 1.4rem;
+			--radius-lg: 1.75rem;
+			--content-width: 1080px;
+			--transition: 160ms ease;
+			--font-sans: "Aptos", "Segoe UI", "Trebuchet MS", sans-serif;
+			--font-serif: "Georgia", "Times New Roman", serif;
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		html {
+			color-scheme: light;
+		}
+
+		body {
+			margin: 0;
+			min-height: 100vh;
+			font-family: var(--font-sans);
+			color: var(--text);
+			background:
+				radial-gradient(circle at top left, rgba(20, 184, 166, 0.11), transparent 26%),
+				radial-gradient(circle at top right, rgba(217, 119, 6, 0.12), transparent 20%),
+				linear-gradient(180deg, #fbf9f5 0%, var(--bg) 62%, #f2ede4 100%);
+		}
+
+		a {
+			color: var(--accent);
+		}
+
+		.page-shell {
+			width: min(calc(100% - 2rem), var(--content-width));
+			margin: 0 auto;
+			padding: 3rem 0 4rem;
+		}
+
+		.calculator {
+			display: grid;
+			gap: 1.5rem;
+		}
+
+		.hero {
+			position: relative;
+			overflow: hidden;
+			display: grid;
+			gap: 1rem;
+			padding: clamp(1.5rem, 2vw, 2rem);
+			border: 1px solid rgba(29, 42, 53, 0.08);
+			border-radius: var(--radius-lg);
+			background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(249, 252, 251, 0.9));
+			box-shadow: var(--shadow-soft);
+			isolation: isolate;
+		}
+
+		.hero::after {
+			content: "";
+			position: absolute;
+			inset: auto -5rem -5rem auto;
+			width: 14rem;
+			height: 14rem;
+			border-radius: 50%;
+			background: radial-gradient(circle, rgba(20, 184, 166, 0.16), transparent 70%);
+			z-index: -1;
+		}
+
+		.eyebrow {
+			margin: 0;
+			font-size: 0.78rem;
+			font-weight: 800;
+			letter-spacing: 0.16em;
+			text-transform: uppercase;
+			color: var(--accent);
+		}
+
+		h1,
+		h2,
+		p {
+			margin: 0;
+		}
+
+		h1 {
+			max-width: 15ch;
+			font-family: var(--font-serif);
+			font-size: clamp(2.2rem, 4vw, 3.5rem);
+			line-height: 1.02;
+			letter-spacing: -0.03em;
+		}
+
+		.intro {
+			max-width: 66ch;
+			color: var(--muted);
+			font-size: 1.03rem;
+			line-height: 1.75;
+		}
+
+		.panel {
+			display: grid;
+			grid-template-columns: minmax(0, 1.05fr) minmax(300px, 0.95fr);
+			gap: 1.5rem;
+			align-items: start;
+		}
+
+		.form-card,
+		.result-card {
+			border: 1px solid var(--line);
+			border-radius: var(--radius-md);
+			backdrop-filter: blur(12px);
+		}
+
+		.form-card {
+			padding: clamp(1.35rem, 2vw, 1.8rem);
+			background: var(--surface);
+			box-shadow: var(--shadow-soft);
+		}
+
+		.form-header {
+			display: grid;
+			gap: 0.45rem;
+			margin-bottom: 1.4rem;
+		}
+
+		h2 {
+			font-size: clamp(1.45rem, 2vw, 1.8rem);
+			line-height: 1.15;
+		}
+
+		.form-description {
+			color: var(--muted);
+			line-height: 1.6;
+		}
+
+		.field-grid {
+			display: grid;
+			gap: 1rem;
+		}
+
+		.field {
+			display: grid;
+			gap: 0.5rem;
+		}
+
+		.field label {
+			font-weight: 700;
+			line-height: 1.4;
+		}
+
+		.input-wrap {
+			display: grid;
+			grid-template-columns: auto minmax(0, 1fr);
+			align-items: center;
+			gap: 0.65rem;
+			min-height: 3.7rem;
+			padding: 0 1rem;
+			border: 1px solid rgba(29, 42, 53, 0.14);
+			border-radius: 1.15rem;
+			background: rgba(255, 255, 255, 0.92);
+			transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+		}
+
+		.input-wrap:hover {
+			border-color: rgba(15, 118, 110, 0.28);
+			box-shadow: 0 10px 24px rgba(29, 42, 53, 0.05);
+		}
+
+		.input-wrap:focus-within {
+			border-color: rgba(15, 118, 110, 0.7);
+			box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.15);
+			transform: translateY(-1px);
+		}
+
+		.currency-mark {
+			font-weight: 800;
+			color: var(--accent);
+			font-size: 1.05rem;
+		}
+
+		.money-input {
+			width: 100%;
+			border: 0;
+			padding: 1rem 0;
+			background: transparent;
+			color: var(--text);
+			font: inherit;
+			font-size: 1.02rem;
+			outline: 0;
+		}
+
+		.money-input::placeholder {
+			color: #9aa6b2;
+		}
+
+		.field-note {
+			color: var(--muted);
+			font-size: 0.92rem;
+			line-height: 1.5;
+		}
+
+		.result-card {
+			position: sticky;
+			top: 1.5rem;
+			display: grid;
+			gap: 1rem;
+			padding: clamp(1.45rem, 2.2vw, 2rem);
+			background: var(--result-bg);
+			box-shadow: var(--shadow-strong);
+		}
+
+		.result-card__label {
+			font-size: 0.82rem;
+			font-weight: 800;
+			letter-spacing: 0.14em;
+			text-transform: uppercase;
+			color: var(--accent);
+		}
+
+		.result-card__amount {
+			font-family: var(--font-serif);
+			font-size: clamp(2.3rem, 4vw, 3.35rem);
+			line-height: 0.98;
+			letter-spacing: -0.04em;
+		}
+
+		.monthly {
+			display: grid;
+			gap: 0.15rem;
+			padding-top: 0.9rem;
+			border-top: 1px solid rgba(29, 42, 53, 0.1);
+		}
+
+		.monthly__amount {
+			font-size: clamp(1.65rem, 2.5vw, 2.2rem);
+			font-weight: 800;
+			line-height: 1;
+		}
+
+		.monthly__caption {
+			color: var(--muted);
+			font-size: 0.95rem;
+		}
+
+		.meta {
+			display: grid;
+			gap: 0.7rem;
+			color: var(--muted);
+			font-size: 0.95rem;
+			line-height: 1.6;
+		}
+
+		.meta a {
+			width: fit-content;
+			color: var(--accent);
+			font-weight: 700;
+			text-decoration-thickness: 0.08em;
+			text-underline-offset: 0.18em;
+			transition: color var(--transition), text-decoration-color var(--transition);
+		}
+
+		.meta a:hover,
+		.meta a:focus-visible {
+			color: #0b5d57;
+			text-decoration-color: currentColor;
+		}
+
+		.disclaimer {
+			padding-top: 0.75rem;
+			border-top: 1px solid rgba(29, 42, 53, 0.08);
+			font-size: 0.92rem;
+		}
+
+		.focus-ring:focus-visible {
+			outline: 3px solid rgba(20, 184, 166, 0.32);
+			outline-offset: 3px;
+		}
+
+		.sr-only {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			padding: 0;
+			margin: -1px;
+			overflow: hidden;
+			clip: rect(0, 0, 0, 0);
+			white-space: nowrap;
+			border: 0;
+		}
+
+		@media (max-width: 860px) {
+			.page-shell {
+				width: min(calc(100% - 1.25rem), var(--content-width));
+				padding-top: 1.25rem;
+				padding-bottom: 2rem;
+			}
+
+			.panel {
+				grid-template-columns: 1fr;
+			}
+
+			.result-card {
+				position: static;
+			}
+		}
+
+		@media (max-width: 520px) {
+			body {
+				background:
+					radial-gradient(circle at top left, rgba(20, 184, 166, 0.09), transparent 28%),
+					linear-gradient(180deg, #fbf9f5 0%, var(--bg) 65%, #f2ede4 100%);
+			}
+
+			.hero,
+			.form-card,
+			.result-card {
+				border-radius: 1.3rem;
+			}
+
+			.input-wrap {
+				min-height: 3.45rem;
+			}
+		}
+	</style>
+</head>
+<body>
+	<main class="page-shell">
+		<section class="calculator" aria-labelledby="page-title">
+			<header class="hero">
+				<p class="eyebrow">Indicatieve berekening</p>
+				<h1 id="page-title">Maximale hypotheek berekenen</h1>
+				<p class="intro">
+					Benieuwd wat je kunt lenen? Bereken je maximale hypotheek en maandlasten met je bruto jaarinkomen.
+					Heb je een partner? Dan kun je het inkomen van jullie allebei gebruiken voor de berekening. Maar dat hoeft niet.
+					Zo weet je wat voor jou de mogelijkheden zijn.
+				</p>
+			</header>
+
+			<section class="panel" aria-label="Hypotheekcalculator">
+				<form class="form-card" novalidate>
+					<div class="form-header">
+						<h2>Je hypotheek berekenen</h2>
+						<p class="form-description">Bereken hoeveel je kunt lenen en wat je maandlasten worden</p>
+					</div>
+
+					<div class="field-grid">
+						<div class="field">
+							<label for="income">Je bruto jaarinkomen</label>
+							<div class="input-wrap">
+								<span class="currency-mark" aria-hidden="true">€</span>
+								<input
+									class="money-input"
+									id="income"
+									name="income"
+									type="text"
+									inputmode="numeric"
+									autocomplete="off"
+									placeholder="Bijvoorbeeld 52.000"
+									aria-describedby="income-note"
+								/>
+							</div>
+							<p class="field-note" id="income-note">Vul je bruto jaarinkomen in hele euro's in.</p>
+						</div>
+
+						<div class="field">
+							<label for="partner-income">Bruto jaarinkomen partner</label>
+							<div class="input-wrap">
+								<span class="currency-mark" aria-hidden="true">€</span>
+								<input
+									class="money-input"
+									id="partner-income"
+									name="partnerIncome"
+									type="text"
+									inputmode="numeric"
+									autocomplete="off"
+									placeholder="Optioneel"
+									aria-describedby="partner-note"
+								/>
+							</div>
+							<p class="field-note" id="partner-note">Dit veld is optioneel en mag leeg blijven.</p>
+						</div>
+					</div>
+				</form>
+
+				<aside class="result-card" aria-live="polite" aria-atomic="true">
+					<p class="result-card__label">Wat je kunt lenen</p>
+					<p class="result-card__amount" id="max-mortgage">€ 0</p>
+
+					<div class="monthly">
+						<p class="monthly__amount" id="monthly-payment">€ 0</p>
+						<p class="monthly__caption">bruto per maand</p>
+					</div>
+
+					<div class="meta">
+						<p>Op basis van 3,86% 10 jaar vaste rente met NHG</p>
+						<a class="focus-ring" href="#voorwaarden">Lees hier de voorwaarden van deze berekening</a>
+						<p class="disclaimer">Dit is een indicatie. Maak binnen een paar minuten een meer uitgebreide berekening.</p>
+					</div>
+				</aside>
+			</section>
+
+			<section class="sr-only" id="voorwaarden" aria-label="Voorwaarden van de berekening">
+				<p>
+					Indicatieve berekening op basis van inkomen en een vaste voorbeeldrente. De uitkomst vervangt geen persoonlijk advies.
+				</p>
+			</section>
+		</section>
+	</main>
+
+	<script>
+		const config = {
+			annualInterestRate: 0.0386,
+			termYears: 30,
+			incomeMultiplier: 4.25,
+			locale: "nl-NL",
+			currency: "EUR",
+		};
+
+		const elements = {
+			income: document.getElementById("income"),
+			partnerIncome: document.getElementById("partner-income"),
+			maxMortgage: document.getElementById("max-mortgage"),
+			monthlyPayment: document.getElementById("monthly-payment"),
+		};
+
+		const currencyFormatter = new Intl.NumberFormat(config.locale, {
+			style: "currency",
+			currency: config.currency,
+			maximumFractionDigits: 0,
+		});
+
+		const integerFormatter = new Intl.NumberFormat(config.locale);
+
+		function sanitizeMoneyInput(value) {
+			return value.replace(/\D+/g, "");
+		}
+
+		function parseMoneyInput(value) {
+			const digits = sanitizeMoneyInput(value);
+			return digits ? Number(digits) : 0;
+		}
+
+		function formatInputValue(value) {
+			const digits = sanitizeMoneyInput(value);
+			return digits ? integerFormatter.format(Number(digits)) : "";
+		}
+
+		// Keep the calculation isolated so a real affordability formula can replace it later.
+		function calculateMortgage({ income, partnerIncome, incomeMultiplier, annualInterestRate, termYears }) {
+			const totalIncome = income + partnerIncome;
+			const maximumMortgage = totalIncome > 0 ? totalIncome * incomeMultiplier : 0;
+
+			// Standard annuity calculation for a fixed-rate mortgage over the configured term.
+			const monthlyRate = annualInterestRate / 12;
+			const totalMonths = termYears * 12;
+			const monthlyPayment = maximumMortgage > 0
+				? (maximumMortgage * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -totalMonths))
+				: 0;
+
+			return {
+				maximumMortgage,
+				monthlyPayment,
+			};
+		}
+
+		function updateResults() {
+			const income = parseMoneyInput(elements.income.value);
+			const partnerIncome = parseMoneyInput(elements.partnerIncome.value);
+			const { maximumMortgage, monthlyPayment } = calculateMortgage({
+				income,
+				partnerIncome,
+				incomeMultiplier: config.incomeMultiplier,
+				annualInterestRate: config.annualInterestRate,
+				termYears: config.termYears,
+			});
+
+			elements.maxMortgage.textContent = currencyFormatter.format(Math.round(maximumMortgage));
+			elements.monthlyPayment.textContent = currencyFormatter.format(Math.round(monthlyPayment));
+		}
+
+		function handleMoneyInput(event) {
+			const input = event.currentTarget;
+			input.value = formatInputValue(input.value);
+			updateResults();
+		}
+
+		function preventInvalidKeystrokes(event) {
+			if (event.ctrlKey || event.metaKey || event.altKey) {
+				return;
+			}
+
+			const allowedKeys = [
+				"Backspace",
+				"Delete",
+				"Tab",
+				"Escape",
+				"Enter",
+				"ArrowLeft",
+				"ArrowRight",
+				"Home",
+				"End",
+			];
+
+			if (allowedKeys.includes(event.key)) {
+				return;
+			}
+
+			if (!/^[0-9]$/.test(event.key)) {
+				event.preventDefault();
+			}
+		}
+
+		[elements.income, elements.partnerIncome].forEach((input) => {
+			input.addEventListener("keydown", preventInvalidKeystrokes);
+			input.addEventListener("input", handleMoneyInput);
+			input.addEventListener("blur", handleMoneyInput);
+		});
+
+		updateResults();
+	</script>
+</body>
+</html>

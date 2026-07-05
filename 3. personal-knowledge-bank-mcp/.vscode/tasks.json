@@ -1,0 +1,12 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Personal Knowledge Bank MCP",
+      "type": "shell",
+      "command": "uv run server.py",
+      "isBackground": true,
+      "problemMatcher": []
+    }
+  ]
+}

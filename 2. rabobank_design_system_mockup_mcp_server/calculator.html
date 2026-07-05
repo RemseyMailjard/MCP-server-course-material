@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mortgage Calculator — Sunset</title>
+    <style>
+        /* Design tokens — sunset theme (from design-mcp-server) */
+        :root {
+            --background: #fff7ed;
+            --surface: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --primary: #c2410c;
+            --secondary: #fb923c;
+            --radius: 1rem;
+            --shadow: 0 22px 45px rgba(194, 65, 12, 0.18);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            padding: 1.5rem;
+            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(1200px 600px at 80% -10%, rgba(251, 146, 60, 0.35), transparent 60%),
+                radial-gradient(900px 500px at -10% 110%, rgba(194, 65, 12, 0.18), transparent 55%),
+                var(--background);
+        }
+
+        .page {
+            max-width: 64rem;
+            margin: 0 auto;
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .page:focus {
+            outline: none;
+        }
+
+        .skip-link {
+            position: absolute;
+            left: 0.75rem;
+            top: -3.5rem;
+            z-index: 10;
+            padding: 0.7rem 1rem;
+            border-radius: 0.75rem;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 700;
+            text-decoration: none;
+            transition: top 160ms ease;
+        }
+
+        .skip-link:focus-visible {
+            top: 0.75rem;
+            outline: 3px solid var(--secondary);
+            outline-offset: 2px;
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            border: 0;
+            clip: rect(0 0 0 0);
+            clip-path: inset(50%);
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        /* Floating Navbar (sunset-tuned) */
+        .ui-navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.9rem 1.1rem;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: var(--radius);
+            background: linear-gradient(135deg, rgba(194, 65, 12, 0.92), rgba(251, 146, 60, 0.92));
+            color: #fff;
+            backdrop-filter: blur(18px);
+            box-shadow: var(--shadow);
+        }
+
+        .ui-navbar__brand,
+        .ui-navbar__links a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .ui-navbar__brand {
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+
+        .ui-navbar__links {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .ui-navbar__action {
+            border: 0;
+            border-radius: 999px;
+            padding: 0.7rem 1rem;
+            background: #fff7ed;
+            color: var(--primary);
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 160ms ease, filter 160ms ease;
+        }
+
+        .ui-navbar__action:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.02);
+        }
+
+        .ui-navbar__links a:focus-visible,
+        .ui-navbar__action:focus-visible {
+            outline: 3px solid #fff7ed;
+            outline-offset: 3px;
+            border-radius: 0.5rem;
+        }
+
+        /* Feature Panel hero (sunset-tuned) */
+        .ui-feature-panel {
+            display: grid;
+            grid-template-columns: 1.45fr auto;
+            gap: 1rem;
+            align-items: end;
+            padding: 1.6rem;
+            border: 1px solid rgba(194, 65, 12, 0.12);
+            border-radius: 1.5rem;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 247, 237, 0.92));
+            box-shadow: var(--shadow);
+        }
+
+        .ui-feature-panel__eyebrow {
+            margin: 0 0 0.45rem;
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--primary);
+        }
+
+        .ui-feature-panel h1 {
+            margin: 0 0 0.7rem;
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+        }
+
+        .ui-feature-panel p:last-child {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        /* Layout for calculator + results */
+        .layout {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 48rem) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .ui-feature-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Elevated Content Card (sunset-tuned) */
+        .ui-card {
+            border: 1px solid rgba(194, 65, 12, 0.1);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            box-shadow: var(--shadow);
+        }
+
+        .ui-card__eyebrow {
+            margin: 0 0 0.75rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--primary);
+        }
+
+        /* Form fields */
+        .field {
+            display: grid;
+            gap: 0.4rem;
+            margin-bottom: 1.1rem;
+        }
+
+        .field label {
+            font-weight: 700;
+            font-size: 0.92rem;
+        }
+
+        .field .hint {
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+
+        .field input {
+            appearance: none;
+            width: 100%;
+            padding: 0.8rem 0.9rem;
+            font: inherit;
+            color: var(--text);
+            border: 1px solid rgba(31, 41, 55, 0.18);
+            border-radius: 0.75rem;
+            background: var(--surface);
+            transition: border-color 160ms ease, box-shadow 160ms ease;
+        }
+
+        .field input:focus-visible {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.35);
+        }
+
+        .field input[aria-invalid="true"] {
+            border-color: #b91c1c;
+            box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.18);
+        }
+
+        .field .error {
+            display: none;
+            align-items: center;
+            gap: 0.35rem;
+            color: #b91c1c;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .field .error::before {
+            content: "\26A0";
+            font-size: 0.9rem;
+        }
+
+        .field .error[data-visible="true"] {
+            display: flex;
+        }
+
+        /* Glass Accent Button (sunset-tuned, primary action) */
+        .ui-button {
+            appearance: none;
+            border: 0;
+            width: 100%;
+            border-radius: 999px;
+            padding: 0.95rem 1.35rem;
+            font: 600 1rem/1 system-ui, sans-serif;
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            box-shadow: 0 16px 35px rgba(194, 65, 12, 0.28);
+            cursor: pointer;
+            transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+        }
+
+        .ui-button:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.04);
+        }
+
+        .ui-button:active {
+            transform: translateY(0);
+        }
+
+        .ui-button:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.45), 0 16px 35px rgba(194, 65, 12, 0.28);
+        }
+
+        /* Results */
+        .result-primary {
+            display: grid;
+            gap: 0.25rem;
+            margin: 0 0 1.25rem;
+        }
+
+        .result-primary .amount {
+            font-size: clamp(2rem, 5vw, 2.8rem);
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .result-primary .label {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.85rem;
+        }
+
+        .stat {
+            padding: 0.9rem 1rem;
+            border-radius: 0.85rem;
+            background: rgba(255, 247, 237, 0.85);
+            border: 1px solid rgba(194, 65, 12, 0.1);
+        }
+
+        .stat .stat__label {
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .stat .stat__value {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-top: 0.2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <a class="skip-link" href="#calculator">Skip to calculator</a>
+    <main class="page" id="main-content" tabindex="-1">
+        <!-- Floating Navbar -->
+        <header class="ui-navbar">
+            <a class="ui-navbar__brand" href="#">Sunset Lending</a>
+            <nav class="ui-navbar__links" aria-label="Primary">
+                <a href="#calculator">Calculator</a>
+                <a href="#results">Results</a>
+                <a href="#">Rates</a>
+            </nav>
+            <button class="ui-navbar__action" type="button">Get pre-approved</button>
+        </header>
+
+        <!-- Feature Panel hero -->
+        <section class="ui-feature-panel">
+            <div class="ui-feature-panel__content">
+                <p class="ui-feature-panel__eyebrow">Mortgage planner</p>
+                <h1>Estimate your monthly payment</h1>
+                <p>Enter your loan details to see the monthly cost, total interest, and the full amount you'll repay
+                    over the life of the loan.</p>
+            </div>
+        </section>
+
+        <!-- Calculator + Results -->
+        <section class="layout">
+            <!-- Input card -->
+            <article class="ui-card" id="calculator">
+                <p class="ui-card__eyebrow">Loan details</p>
+                <form id="mortgage-form" novalidate>
+                    <div class="field">
+                        <label for="amount">Home price / loan amount</label>
+                        <input id="amount" name="amount" type="number" inputmode="decimal" min="0" step="1000"
+                            value="350000" required aria-describedby="amount-hint amount-error" />
+                        <span class="hint" id="amount-hint">The total amount you plan to borrow.</span>
+                        <span class="error" id="amount-error" role="alert"></span>
+                    </div>
+
+                    <div class="field">
+                        <label for="downpayment">Down payment</label>
+                        <input id="downpayment" name="downpayment" type="number" inputmode="decimal" min="0" step="1000"
+                            value="70000" required aria-describedby="downpayment-hint downpayment-error" />
+                        <span class="hint" id="downpayment-hint">Subtracted from the loan amount.</span>
+                        <span class="error" id="downpayment-error" role="alert"></span>
+                    </div>
+
+                    <div class="field">
+                        <label for="rate">Annual interest rate (%)</label>
+                        <input id="rate" name="rate" type="number" inputmode="decimal" min="0" step="0.01" value="4.5"
+                            required aria-describedby="rate-hint rate-error" />
+                        <span class="hint" id="rate-hint">Yearly nominal rate from your lender.</span>
+                        <span class="error" id="rate-error" role="alert"></span>
+                    </div>
+
+                    <div class="field">
+                        <label for="term">Term (years)</label>
+                        <input id="term" name="term" type="number" inputmode="numeric" min="1" max="40" step="1"
+                            value="30" required aria-describedby="term-hint term-error" />
+                        <span class="hint" id="term-hint">Length of the loan in years.</span>
+                        <span class="error" id="term-error" role="alert"></span>
+                    </div>
+
+                    <button class="ui-button" type="submit" data-ui-button>
+                        <span>Calculate payment</span>
+                    </button>
+                </form>
+            </article>
+
+            <!-- Results card -->
+            <article class="ui-card" id="results" aria-labelledby="results-heading">
+                <p class="ui-card__eyebrow" id="results-heading">Your estimate</p>
+                <p class="visually-hidden" id="status" role="status" aria-live="polite"></p>
+                <div class="result-primary">
+                    <span class="amount" id="monthly">—</span>
+                    <span class="label">Estimated monthly payment</span>
+                </div>
+                <div class="result-grid">
+                    <div class="stat">
+                        <div class="stat__label">Loan principal</div>
+                        <div class="stat__value" id="principal">—</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat__label">Total interest</div>
+                        <div class="stat__value" id="interest">—</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat__label">Total repaid</div>
+                        <div class="stat__value" id="total">—</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat__label">Payments</div>
+                        <div class="stat__value" id="payments">—</div>
+                    </div>
+                </div>
+            </article>
+        </section>
+    </main>
+
+    <script>
+        const form = document.getElementById('mortgage-form');
+        const status = document.getElementById('status');
+        const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+        const currencyCents = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
+
+        const fields = [
+            { id: 'amount', label: 'Home price / loan amount' },
+            { id: 'downpayment', label: 'Down payment' },
+            { id: 'rate', label: 'Annual interest rate' },
+            { id: 'term', label: 'Term in years' }
+        ];
+
+        function setError(id, message)
+        {
+            const input = document.getElementById(id);
+            const error = document.getElementById(`${id}-error`);
+            if (message)
+            {
+                input.setAttribute('aria-invalid', 'true');
+                error.textContent = message;
+                error.setAttribute('data-visible', 'true');
+            } else
+            {
+                input.removeAttribute('aria-invalid');
+                error.textContent = '';
+                error.removeAttribute('data-visible');
+            }
+        }
+
+        function validate()
+        {
+            let firstInvalid = null;
+            fields.forEach(({ id, label }) =>
+            {
+                const input = document.getElementById(id);
+                const raw = input.value.trim();
+                let message = '';
+                if (raw === '' || Number.isNaN(Number(raw)))
+                {
+                    message = `Enter a number for ${label.toLowerCase()}.`;
+                } else if (Number(raw) < 0)
+                {
+                    message = `${label} cannot be negative.`;
+                } else if (id === 'term' && Number(raw) < 1)
+                {
+                    message = 'Enter a term of at least 1 year.';
+                }
+                setError(id, message);
+                if (message && !firstInvalid) firstInvalid = input;
+            });
+            if (firstInvalid) firstInvalid.focus();
+            return !firstInvalid;
+        }
+
+        // Clear a field's error as soon as the user corrects it.
+        fields.forEach(({ id }) =>
+        {
+            document.getElementById(id).addEventListener('input', () => setError(id, ''));
+        });
+
+        function calculate()
+        {
+            const amount = parseFloat(document.getElementById('amount').value) || 0;
+            const down = parseFloat(document.getElementById('downpayment').value) || 0;
+            const ratePct = parseFloat(document.getElementById('rate').value) || 0;
+            const years = parseInt(document.getElementById('term').value, 10) || 0;
+
+            const principal = Math.max(amount - down, 0);
+            const n = years * 12;
+            const monthlyRate = ratePct / 100 / 12;
+
+            let monthly;
+            if (n <= 0)
+            {
+                monthly = 0;
+            } else if (monthlyRate === 0)
+            {
+                monthly = principal / n;
+            } else
+            {
+                const factor = Math.pow(1 + monthlyRate, n);
+                monthly = principal * (monthlyRate * factor) / (factor - 1);
+            }
+
+            const totalPaid = monthly * n;
+            const totalInterest = Math.max(totalPaid - principal, 0);
+
+            document.getElementById('monthly').textContent = currencyCents.format(monthly || 0);
+            document.getElementById('principal').textContent = currency.format(principal);
+            document.getElementById('interest').textContent = currency.format(totalInterest);
+            document.getElementById('total').textContent = currency.format(totalPaid || 0);
+            document.getElementById('payments').textContent = n > 0 ? `${n} mo` : '—';
+
+            status.textContent = `Estimate updated. Monthly payment ${currencyCents.format(monthly || 0)} over ${n} payments.`;
+        }
+
+        form.addEventListener('submit', (event) =>
+        {
+            event.preventDefault();
+            if (!validate())
+            {
+                status.textContent = 'Please fix the highlighted fields before calculating.';
+                return;
+            }
+            calculate();
+        });
+
+        // Show an estimate on first load.
+        calculate();
+    </script>
+</body>
+
+</html>
