@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Build Your First MCP Server · FastMCP Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#161b26;
+    --ink-soft:#4a5468;
+    --ink-faint:#7b8499;
+    --paper:#f6f7f9;
+    --surface:#ffffff;
+    --line:#e4e7ec;
+    --line-soft:#eef0f3;
+    --code-bg:#11151f;
+    --code-fg:#e7eaf2;
+    --code-dim:#7d869c;
+
+    /* the control-model system — the spine of the whole lab */
+    --tool:#3a55d9;       --tool-tint:#edf1fe;   --tool-line:#c8d3fb;
+    --resource:#0d8a6c;   --resource-tint:#e6f6f0; --resource-line:#bfe6d8;
+    --prompt:#b5781a;     --prompt-tint:#fbf2df;  --prompt-line:#ecd9ad;
+    --neutral:#5b6577;    --neutral-tint:#eef0f3;
+
+    --radius:14px;
+    --radius-sm:9px;
+    --maxw:780px;
+    --shadow:0 1px 2px rgba(20,27,38,.05),0 8px 28px -18px rgba(20,27,38,.25);
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,sans-serif;
+    font-size:16px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- layout ---------- */
+  .shell{display:grid;grid-template-columns:288px minmax(0,1fr);max-width:1320px;margin:0 auto}
+  .main{padding:0 clamp(20px,5vw,72px)}
+  .wrap{max-width:var(--maxw);margin:0 auto}
+
+  /* ---------- sidebar ---------- */
+  .side{
+    position:sticky;top:0;align-self:start;height:100vh;
+    border-right:1px solid var(--line);
+    padding:34px 26px;background:var(--surface);
+    display:flex;flex-direction:column;gap:26px;overflow-y:auto;
+  }
+  .brand{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:.95rem;letter-spacing:-.01em;line-height:1.3}
+  .brand small{display:block;font-family:"IBM Plex Mono",monospace;font-weight:400;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);margin-top:6px}
+
+  .progress-wrap{display:flex;flex-direction:column;gap:8px}
+  .progress-meta{display:flex;justify-content:space-between;font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint)}
+  .progress-track{height:6px;background:var(--line);border-radius:99px;overflow:hidden}
+  .progress-bar{height:100%;width:0;background:var(--ink);border-radius:99px;transition:width .4s ease}
+
+  nav.steps{display:flex;flex-direction:column;gap:2px}
+  nav.steps a{
+    display:flex;align-items:center;gap:12px;
+    padding:9px 10px;border-radius:var(--radius-sm);
+    text-decoration:none;color:var(--ink-soft);font-size:.9rem;font-weight:500;
+    transition:background .15s,color .15s;
+  }
+  nav.steps a:hover{background:var(--paper);color:var(--ink)}
+  nav.steps a.active{background:var(--paper);color:var(--ink)}
+  nav.steps a.active .num{box-shadow:0 0 0 3px var(--paper),0 0 0 4px currentColor}
+  .num{
+    flex:none;width:26px;height:26px;border-radius:7px;
+    display:grid;place-items:center;
+    font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:600;
+    background:var(--neutral-tint);color:var(--neutral);
+  }
+  .num.t-tool{background:var(--tool-tint);color:var(--tool)}
+  .num.t-resource{background:var(--resource-tint);color:var(--resource)}
+  .num.t-prompt{background:var(--prompt-tint);color:var(--prompt)}
+  nav.steps a .done{margin-left:auto;color:var(--resource);opacity:0;font-size:.9rem;transition:opacity .2s}
+  nav.steps a.completed .done{opacity:1}
+  .side-foot{margin-top:auto;font-size:.72rem;color:var(--ink-faint);line-height:1.5;font-family:"IBM Plex Mono",monospace}
+
+  /* ---------- mobile topbar ---------- */
+  .topbar{display:none}
+
+  /* ---------- hero ---------- */
+  .hero{padding:72px 0 18px}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:22px}
+  h1{
+    font-family:"Space Grotesk",sans-serif;font-weight:600;
+    font-size:clamp(2.1rem,5.2vw,3.3rem);line-height:1.04;letter-spacing:-.02em;
+    margin:0 0 20px;color:var(--ink);
+  }
+  h1 .q{color:var(--ink-faint)}
+  .lede{font-size:1.16rem;line-height:1.6;color:var(--ink-soft);max-width:60ch;margin:0 0 14px}
+  .lede strong{color:var(--ink);font-weight:600}
+
+  /* ---------- control-model thesis legend ---------- */
+  .controllers{display:grid;gap:12px;margin:38px 0 8px}
+  .ctrl{
+    display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;
+    padding:16px 18px;background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);box-shadow:var(--shadow);
+  }
+  .ctrl .dot{width:11px;height:11px;border-radius:50%}
+  .ctrl .name{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:1.02rem}
+  .ctrl .desc{color:var(--ink-soft);font-size:.92rem}
+  .ctrl .who{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:99px;white-space:nowrap}
+  .ctrl.tool{border-left:3px solid var(--tool)} .ctrl.tool .dot{background:var(--tool)} .ctrl.tool .who{background:var(--tool-tint);color:var(--tool)}
+  .ctrl.resource{border-left:3px solid var(--resource)} .ctrl.resource .dot{background:var(--resource)} .ctrl.resource .who{background:var(--resource-tint);color:var(--resource)}
+  .ctrl.prompt{border-left:3px solid var(--prompt)} .ctrl.prompt .dot{background:var(--prompt)} .ctrl.prompt .who{background:var(--prompt-tint);color:var(--prompt)}
+  @media(max-width:520px){.ctrl{grid-template-columns:auto 1fr;}.ctrl .who{grid-column:2;justify-self:start}}
+
+  /* ---------- steps ---------- */
+  .step{padding:60px 0;border-top:1px solid var(--line)}
+  .step-head{display:flex;align-items:baseline;gap:14px;margin-bottom:8px}
+  .step-num{font-family:"IBM Plex Mono",monospace;font-size:.8rem;font-weight:600;letter-spacing:.06em;padding:4px 9px;border-radius:7px;background:var(--neutral-tint);color:var(--neutral)}
+  .step-num.t-tool{background:var(--tool-tint);color:var(--tool)}
+  .step-num.t-resource{background:var(--resource-tint);color:var(--resource)}
+  .step-num.t-prompt{background:var(--prompt-tint);color:var(--prompt)}
+  h2{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:clamp(1.5rem,3.4vw,2rem);letter-spacing:-.015em;line-height:1.1;margin:0 0 18px}
+  h3{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:1.12rem;letter-spacing:-.01em;margin:30px 0 10px}
+  p{margin:0 0 16px}
+  .step p,.step li{color:var(--ink-soft)}
+  .step strong{color:var(--ink);font-weight:600}
+  a.link{color:var(--tool);text-decoration:none;border-bottom:1px solid var(--tool-line)}
+  a.link:hover{border-color:var(--tool)}
+  ul,ol{margin:0 0 16px;padding-left:1.2em}
+  li{margin-bottom:7px}
+  code:not(pre code){font-family:"IBM Plex Mono",monospace;font-size:.86em;background:var(--neutral-tint);color:var(--ink);padding:.12em .4em;border-radius:5px;border:1px solid var(--line)}
+
+  /* control chip used inline / above blocks */
+  .chip{display:inline-flex;align-items:center;gap:7px;font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;padding:5px 11px;border-radius:99px;border:1px solid transparent}
+  .chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+  .chip.tool{color:var(--tool);background:var(--tool-tint);border-color:var(--tool-line)}
+  .chip.resource{color:var(--resource);background:var(--resource-tint);border-color:var(--resource-line)}
+  .chip.prompt{color:var(--prompt);background:var(--prompt-tint);border-color:var(--prompt-line)}
+
+  /* why callout */
+  .why{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px 20px 24px;margin:22px 0;box-shadow:var(--shadow)}
+  .why::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:3px;background:var(--ink)}
+  .why.tool::before{background:var(--tool)} .why.resource::before{background:var(--resource)} .why.prompt::before{background:var(--prompt)}
+  .why .why-label{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px}
+  .why p:last-child{margin-bottom:0}
+
+  /* code block */
+  .code{margin:22px 0;border-radius:var(--radius);overflow:hidden;border:1px solid #1d2433;box-shadow:var(--shadow)}
+  .code-bar{display:flex;align-items:center;justify-content:space-between;background:#0c0f17;padding:9px 14px;border-bottom:1px solid #1d2433}
+  .code-file{font-family:"IBM Plex Mono",monospace;font-size:.74rem;color:var(--code-dim);letter-spacing:.03em}
+  .code-file b{color:#aeb6cc;font-weight:500}
+  .copy{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--code-dim);background:transparent;border:1px solid #262f42;padding:5px 11px;border-radius:7px;cursor:pointer;transition:.15s}
+  .copy:hover{color:#fff;border-color:#3a455e}
+  .copy.copied{color:var(--resource);border-color:var(--resource)}
+  pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:18px 18px;overflow-x:auto;font-family:"IBM Plex Mono",monospace;font-size:.82rem;line-height:1.65;tab-size:4}
+  pre .cm{color:#6b7488;font-style:italic}
+  pre .kw{color:#9db4ff}
+  pre .fn{color:#7fdcc0}
+  pre .st{color:#e0b873}
+  pre .dec{color:#d99be0}
+
+  /* checkpoint */
+  .checkpoint{display:flex;gap:14px;align-items:flex-start;background:var(--resource-tint);border:1px solid var(--resource-line);border-radius:var(--radius);padding:16px 18px;margin:22px 0}
+  .checkpoint .ico{flex:none;width:24px;height:24px;border-radius:50%;background:var(--resource);color:#fff;display:grid;place-items:center;font-size:.8rem;font-weight:700;margin-top:1px}
+  .checkpoint .ct-label{font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--resource);font-weight:600;display:block;margin-bottom:3px}
+  .checkpoint p{color:var(--ink);margin:0}
+  .checkpoint code{background:#fff}
+
+  /* under the hood (details) */
+  details.hood{border:1px solid var(--line);border-radius:var(--radius);margin:22px 0;background:var(--surface);overflow:hidden}
+  details.hood summary{cursor:pointer;list-style:none;padding:14px 18px;font-weight:600;font-size:.92rem;display:flex;align-items:center;gap:10px;color:var(--ink)}
+  details.hood summary::-webkit-details-marker{display:none}
+  details.hood summary .tw{font-family:"IBM Plex Mono",monospace;color:var(--ink-faint);transition:transform .2s;font-size:.9rem}
+  details.hood[open] summary .tw{transform:rotate(90deg)}
+  details.hood .hood-body{padding:0 18px 18px;color:var(--ink-soft);font-size:.94rem}
+  details.hood .hood-body p:last-child{margin-bottom:0}
+
+  /* orchestration diagram */
+  .orch{display:grid;gap:0;margin:26px 0}
+  .orch-row{display:flex;align-items:center;gap:14px;padding:13px 0}
+  .orch-node{flex:none;display:flex;align-items:center;gap:11px;padding:12px 16px;border-radius:var(--radius-sm);border:1px solid var(--line);background:var(--surface);font-size:.9rem;font-weight:500;min-width:0}
+  .orch-node .tag{font-family:"IBM Plex Mono",monospace;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:3px 7px;border-radius:99px}
+  .orch-node.prompt{border-color:var(--prompt-line);background:var(--prompt-tint)} .orch-node.prompt .tag{background:var(--prompt);color:#fff}
+  .orch-node.resource{border-color:var(--resource-line)} .orch-node.resource .tag{background:var(--resource);color:#fff}
+  .orch-node.tool{border-color:var(--tool-line)} .orch-node.tool .tag{background:var(--tool);color:#fff}
+  .orch-desc{color:var(--ink-soft);font-size:.9rem}
+  .orch-arrow{color:var(--ink-faint);font-family:"IBM Plex Mono",monospace;padding-left:6px}
+
+  /* decision table */
+  .decide{width:100%;border-collapse:collapse;margin:22px 0;font-size:.92rem;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .decide th,.decide td{text-align:left;padding:13px 16px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+  .decide thead th{background:var(--paper);font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+  .decide tbody tr:last-child td{border-bottom:none}
+  .decide .pchip{font-family:"IBM Plex Mono",monospace;font-size:.7rem;font-weight:600;padding:4px 9px;border-radius:7px;white-space:nowrap}
+  .decide .pchip.tool{background:var(--tool-tint);color:var(--tool)}
+  .decide .pchip.resource{background:var(--resource-tint);color:var(--resource)}
+  .decide .pchip.prompt{background:var(--prompt-tint);color:var(--prompt)}
+  .decide td:first-child{color:var(--ink);font-weight:500}
+
+  /* mark complete */
+  .complete-row{display:flex;align-items:center;gap:12px;margin-top:30px;padding-top:22px;border-top:1px dashed var(--line)}
+  .complete-row label{display:flex;align-items:center;gap:11px;cursor:pointer;font-weight:500;color:var(--ink);user-select:none}
+  .complete-row input{appearance:none;width:22px;height:22px;border:2px solid var(--line);border-radius:7px;cursor:pointer;position:relative;flex:none;transition:.15s;background:var(--surface)}
+  .complete-row input:checked{background:var(--resource);border-color:var(--resource)}
+  .complete-row input:checked::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:.8rem;font-weight:700}
+  .complete-row input:focus-visible{outline:2px solid var(--tool);outline-offset:2px}
+
+  /* govern grid */
+  .govern{display:grid;gap:12px;margin:22px 0}
+  .gov{display:grid;grid-template-columns:auto 1fr;gap:14px;padding:16px 18px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+  .gov .gdot{width:10px;height:10px;border-radius:50%;margin-top:7px}
+  .gov.tool .gdot{background:var(--tool)} .gov.resource .gdot{background:var(--resource)} .gov.prompt .gdot{background:var(--prompt)}
+  .gov b{font-family:"Space Grotesk",sans-serif}
+  .gov span{color:var(--ink-soft);font-size:.92rem}
+
+  .end{padding:60px 0 90px;border-top:1px solid var(--line)}
+  .end h2{margin-bottom:14px}
+
+  :focus-visible{outline:2px solid var(--tool);outline-offset:3px;border-radius:4px}
+
+  /* ---------- responsive ---------- */
+  @media(max-width:1023px){
+    .shell{grid-template-columns:1fr}
+    .side{position:fixed;inset:0 auto 0 0;width:300px;z-index:40;transform:translateX(-102%);transition:transform .25s ease;box-shadow:0 0 40px rgba(0,0,0,.18)}
+    .side.open{transform:translateX(0)}
+    .topbar{display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:30;background:rgba(246,247,249,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 18px}
+    .topbar .menu-btn{font-family:"IBM Plex Mono",monospace;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 13px;cursor:pointer;color:var(--ink)}
+    .topbar .tb-prog{flex:1;height:6px;background:var(--line);border-radius:99px;overflow:hidden}
+    .topbar .tb-prog i{display:block;height:100%;width:0;background:var(--ink);transition:width .4s}
+    .topbar .tb-pct{font-family:"IBM Plex Mono",monospace;font-size:.74rem;color:var(--ink-soft)}
+    .scrim{position:fixed;inset:0;background:rgba(20,27,38,.4);z-index:35;opacity:0;pointer-events:none;transition:opacity .2s}
+    .scrim.show{opacity:1;pointer-events:auto}
+    .hero{padding:40px 0 10px}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="side" id="side">
+    <div class="brand">FastMCP Lab<small>Build your first MCP server</small></div>
+
+    <div class="progress-wrap">
+      <div class="progress-meta"><span>Progress</span><span id="pctText">0%</span></div>
+      <div class="progress-track"><div class="progress-bar" id="progBar"></div></div>
+    </div>
+
+    <nav class="steps" id="nav">
+      <a href="#step-0"><span class="num">00</span>Setup &amp; scaffold<span class="done">✓</span></a>
+      <a href="#step-1"><span class="num t-tool">01</span>Your first tool<span class="done">✓</span></a>
+      <a href="#step-2"><span class="num t-tool">02</span>A second tool<span class="done">✓</span></a>
+      <a href="#step-3"><span class="num t-resource">03</span>Resources<span class="done">✓</span></a>
+      <a href="#step-4"><span class="num t-prompt">04</span>The prompt<span class="done">✓</span></a>
+      <a href="#step-5"><span class="num">05</span>Reflect &amp; ship<span class="done">✓</span></a>
+      <a href="#reference"><span class="num">★</span>Reference card</a>
+    </nav>
+
+    <div class="side-foot">All data is synthetic.<br>No real customer or rate data.</div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div>
+    <div class="topbar">
+      <button class="menu-btn" id="menuBtn" aria-label="Open steps">Steps ▾</button>
+      <div class="tb-prog"><i id="tbProg"></i></div>
+      <span class="tb-pct" id="tbPct">0%</span>
+    </div>
+    <div class="scrim" id="scrim"></div>
+
+    <main class="main"><div class="wrap">
+
+      <!-- HERO -->
+      <header class="hero">
+        <div class="eyebrow">FastMCP · Python · Hands-on lab</div>
+        <h1>Build your first MCP server.<br><span class="q">Learn the three building blocks.</span></h1>
+        <p class="lede">MCP has three types of capabilities. Each one answers a simple question: <strong>who decides when it happens?</strong> Once you know the answer, you know which type to use.</p>
+        <p class="lede">You'll build one server with a mortgage example, adding tools, resources, and a prompt step by step. By the end you'll have a working server and understand how to build any MCP server.</p>
+
+        <div class="controllers">
+          <div class="ctrl tool"><span class="dot"></span><div><div class="name">Tools</div><div class="desc">Actions and computations the model invokes on its own initiative.</div></div><span class="who">Model-controlled</span></div>
+          <div class="ctrl resource"><span class="dot"></span><div><div class="name">Resources</div><div class="desc">Read-only data the application loads as context.</div></div><span class="who">App-controlled</span></div>
+          <div class="ctrl prompt"><span class="dot"></span><div><div class="name">Prompts</div><div class="desc">Reusable workflows a person triggers deliberately.</div></div><span class="who">User-controlled</span></div>
+        </div>
+      </header>
+
+      <!-- STEP 0 -->
+      <section class="step" id="step-0">
+        <div class="step-head"><span class="step-num">00</span></div>
+        <h2>Setup &amp; scaffold</h2>
+        <p>MCP solves a real problem: <strong>you write your server once, and any AI tool can use it</strong>. No custom code for Claude, or ChatGPT, or the next model. The server tells each client what capabilities it has; the client uses them.</p>
+        <p>We'll use <strong>FastMCP</strong> — a Python library that removes all the boring protocol code. And we'll use <strong>uv</strong> to run Python directly without fussing with virtual environments.</p>
+
+        <h3>1 · Create a project folder and open it in VS Code</h3>
+        <p>Create a new empty folder for this project — for example <code>mcp-lab</code> — somewhere on your machine. Then open it in VS Code: <strong>File → Open Folder…</strong> and select that folder. Everything you create during this lab (<code>server.py</code>, <code>.vscode/mcp.json</code>) lives inside this one folder. Do <em>not</em> use the folder that contains this lab file.</p>
+
+        <h3>2 · Install uv</h3>
+        <p>Open the integrated terminal in VS Code: <strong>Terminal → New Terminal</strong> (or <kbd>Ctrl+`</kbd>). Then run the command for your OS:</p>
+
+        <div class="code">
+          <div class="code-bar"><span class="code-file">terminal · install uv (once)</span><button class="copy">Copy</button></div>
+<pre><code><span class="cm"># macOS / Linux</span>
+curl -LsSf https://astral.sh/uv/install.sh | sh
+<span class="cm"># Windows (PowerShell)</span>
+<span class="cm"># powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"</span></code></pre>
+        </div>
+
+        <p>Verify the install before continuing:</p>
+        <div class="code">
+          <div class="code-bar"><span class="code-file">terminal</span><button class="copy">Copy</button></div>
+<pre><code>uv --version</code></pre>
+        </div>
+        <p>You should see something like <code>uv 0.x.x</code>. If the command is not found, close and reopen the terminal (or restart VS Code) so the updated PATH takes effect.</p>
+
+        <h3>3 · Create server.py</h3>
+        <p>In VS Code's Explorer panel (<kbd>Ctrl+Shift+E</kbd>), click the <strong>New File</strong> icon (or right-click in the panel → <strong>New File</strong>) and name it <code>server.py</code>. Paste the scaffold below. The first four lines are inline metadata that tell <code>uv</code> which libraries to install. <code>uv run server.py</code> handles installation automatically — no virtual environment needed.</p>
+
+        <div class="code">
+          <div class="code-bar"><span class="code-file"><b>server.py</b></span><button class="copy">Copy</button></div>
+<pre><code><span class="cm"># /// script</span>
+<span class="cm"># requires-python = "&gt;=3.10"</span>
+<span class="cm"># dependencies = ["fastmcp"]</span>
+<span class="cm"># ///</span>
+<span class="kw">from</span> fastmcp <span class="kw">import</span> FastMCP
+
+<span class="cm"># The name is what clients show in their UI.</span>
+mcp = <span class="fn">FastMCP</span>(<span class="st">"rabo-mortgage-advisor"</span>)
+
+<span class="cm"># Synthetic sample data. In a real server this would come from</span>
+<span class="cm"># an internal rate service. We expose it as a RESOURCE later.</span>
+MORTGAGE_RATES = {
+    <span class="st">"annuity 10 year fixed"</span>: 3.65,
+    <span class="st">"annuity 20 year fixed"</span>: 4.10,
+    <span class="st">"annuity 30 year fixed"</span>: 4.35,
+    <span class="st">"linear 20 year fixed"</span>: 4.05,
+    <span class="st">"variable rate"</span>: 4.80,
+}
+MAX_DTI_RATIO = 0.30  <span class="cm"># max share of gross income for housing</span>
+
+<span class="kw">if</span> __name__ == <span class="st">"__main__"</span>:
+    mcp.<span class="fn">run</span>()  <span class="cm"># stdio transport — ideal for a first, local server</span></code></pre>
+        </div>
+
+        <h3>4 · Test-run the server</h3>
+        <p>Before registering anything, run the server once manually to confirm there are no errors:</p>
+        <div class="code">
+          <div class="code-bar"><span class="code-file">terminal</span><button class="copy">Copy</button></div>
+<pre><code>uv run server.py</code></pre>
+        </div>
+        <p>You should see output like <code>Starting MCP server…</code> without any errors. Press <kbd>Ctrl+C</kbd> to stop it. If it crashes here, fix it before continuing — it will fail the same way when VS Code tries to start it.</p>
+
+        <h3>5 · Register the server with VS Code</h3>
+        <p>You don't start the server manually during use. Instead, you register it once in a config file and VS Code starts it automatically when needed.</p>
+
+        <p>In VS Code's Explorer panel, click the <strong>New Folder</strong> icon and name it <code>.vscode</code>. Then inside that folder, create a new file named <code>mcp.json</code>. Together they form the path <code>.vscode/mcp.json</code>. Paste this content:</p>
+
+        <div class="code">
+          <div class="code-bar"><span class="code-file"><b>.vscode/mcp.json</b></span><button class="copy">Copy</button></div>
+<pre><code>{
+  <span class="st">"servers"</span>: {
+    <span class="st">"mortgage-advisor"</span>: {
+      <span class="st">"type"</span>: <span class="st">"stdio"</span>,
+      <span class="st">"command"</span>: <span class="st">"uv"</span>,
+      <span class="st">"args"</span>: [<span class="st">"run"</span>, <span class="st">"server.py"</span>]
+    }
+  }
+}</code></pre>
+        </div>
+
+        <div class="why">
+          <div class="why-label">Tip · find the exact path to server.py</div>
+          <p><code>"server.py"</code> is a relative path that works as long as you opened the correct project folder in VS Code. If VS Code can't find the file, get the full absolute path by running this in the terminal:</p>
+          <div class="code" style="margin:14px 0 4px">
+            <div class="code-bar"><span class="code-file">terminal · Windows (PowerShell)</span><button class="copy">Copy</button></div>
+<pre><code>(Resolve-Path server.py).Path</code></pre>
+          </div>
+          <div class="code" style="margin:14px 0 4px">
+            <div class="code-bar"><span class="code-file">terminal · macOS / Linux</span><button class="copy">Copy</button></div>
+<pre><code>realpath server.py</code></pre>
+          </div>
+          <p>Copy the output — for example <code>C:\Users\yourname\mcp-lab\server.py</code> — and paste it into the <code>args</code> array. Use forward slashes in the JSON, even on Windows:</p>
+          <div class="code" style="margin:14px 0 4px">
+            <div class="code-bar"><span class="code-file"><b>.vscode/mcp.json</b> · with absolute path</span><button class="copy">Copy</button></div>
+<pre><code>{
+  <span class="st">"servers"</span>: {
+    <span class="st">"mortgage-advisor"</span>: {
+      <span class="st">"type"</span>: <span class="st">"stdio"</span>,
+      <span class="st">"command"</span>: <span class="st">"uv"</span>,
+      <span class="st">"args"</span>: [<span class="st">"run"</span>, <span class="st">"C:/Users/yourname/mcp-lab/server.py"</span>]
+    }
+  }
+}</code></pre>
+          </div>
+          <p style="margin-bottom:0">Alternatively, <code>"${workspaceFolder}/server.py"</code> is a VS Code variable that always resolves to the open project folder — no path lookup needed.</p>
+        </div>
+
+        <p>After saving <code>mcp.json</code>, a <strong>Start</strong> button appears inline at the very top of the file (look just above the opening <code>{</code>). Click it. VS Code starts the server process and connects to it.</p>
+
+        <p>Open Copilot Chat with <kbd>Ctrl+Alt+I</kbd> (Windows / Linux) or <kbd>⌃⌘I</kbd> (Mac), or click the chat icon in the Activity Bar on the left. Your server will appear under <strong>MCP Servers</strong> in the chat panel.</p>
+
+        <div class="checkpoint">
+          <div class="ico">✓</div>
+          <div><span class="ct-label">Checkpoint</span><p>In Copilot Chat, click the <strong>Tools</strong> button (the plug icon near the chat input). You should see <strong>mortgage-advisor</strong> listed. The server is connected and ready — Tools, Resources, and Prompts are all empty for now. You'll add them one step at a time.</p></div>
+        </div>
+
+        <details class="hood">
+          <summary><span class="tw">▸</span>Why connect VS Code before writing any capability?</summary>
+          <div class="hood-body"><p>When VS Code connects, it asks your server what it can do. Starting from an empty-but-running server means every tool, resource, or prompt you add shows up the moment you reload — you always know immediately whether a problem is in your code or in the connection.</p></div>
+        </details>
+
+        <details class="hood">
+          <summary><span class="tw">▸</span>Prefer a real project over a single file?</summary>
+          <div class="hood-body"><p>The inline metadata keeps this lab to one self-contained file. When it grows into something you maintain, switch to a uv project so the dependencies live in <code>pyproject.toml</code> and a lockfile:</p>
+          <div class="code" style="margin-top:14px">
+            <div class="code-bar"><span class="code-file">terminal</span><button class="copy">Copy</button></div>
+<pre><code>uv init rabo-mcp-lab
+cd rabo-mcp-lab
+uv add fastmcp
+uv run server.py</code></pre>
+          </div>
+          <p style="margin-top:14px">Inside a project you can drop the inline header — <code>uv run</code> uses the project's locked environment instead.</p></div>
+        </details>
+
+        <div class="complete-row"><label><input type="checkbox" data-step="0"> Mark step complete</label></div>
+      </section>
+
+      <!-- STEP 1 -->
+      <section class="step" id="step-1">
+        <div class="step-head"><span class="step-num t-tool">01</span><span class="chip tool">Model-controlled</span></div>
+        <h2>Your first tool</h2>
+
+        <div class="why tool">
+          <div class="why-label">Why this is a tool</div>
+          <p>A <strong>tool</strong> is a function the AI model can <em>call by itself</em>. The model reads your description (the docstring) and decides: <em>"Do I need this? Should I call it now?"</em> The docstring is not a comment — <strong>it's the instruction manual</strong> the model uses to understand what your function does.</p>
+        </div>
+
+        <p>Add a tool that calculates a monthly mortgage payment. That's it: a decorator (<code>@mcp.tool</code>), type hints, and a clear explanation. The model will understand what it does and when to call it.</p>
+
+        <div class="code">
+          <div class="code-bar"><span class="code-file"><b>server.py</b> · add below the sample data</span><button class="copy">Copy</button></div>
+<pre><code><span class="dec">@mcp.tool</span>
+<span class="kw">def</span> <span class="fn">calculate_monthly_payment</span>(
+    principal: <span class="kw">float</span>,
+    annual_rate_pct: <span class="kw">float</span>,
+    term_years: <span class="kw">int</span>,
+) -> <span class="kw">dict</span>:
+    <span class="st">"""Calculate the monthly payment for an annuity mortgage.
+
+    Args:
+        principal: Loan amount in euros.
+        annual_rate_pct: Nominal annual interest rate, e.g. 3.65.
+        term_years: Term of the loan in years.
+
+    Returns:
+        Monthly payment, total amount paid and total interest.
+    """</span>
+    monthly_rate = annual_rate_pct / 100 / 12
+    n = term_years * 12
+
+    <span class="kw">if</span> monthly_rate == 0:
+        monthly_payment = principal / n
+    <span class="kw">else</span>:
+        monthly_payment = principal * monthly_rate / (1 - (1 + monthly_rate) ** -n)
+
+    total_paid = monthly_payment * n
+    <span class="kw">return</span> {
+        <span class="st">"monthly_payment"</span>: <span class="fn">round</span>(monthly_payment, 2),
+        <span class="st">"total_paid"</span>: <span class="fn">round</span>(total_paid, 2),
+        <span class="st">"total_interest"</span>: <span class="fn">round</span>(total_paid - principal, 2),
+    }</code></pre>
+        </div>
+
+        <div class="checkpoint">
+          <div class="ico">✓</div>
+          <div><span class="ct-label">Checkpoint</span><p>In Copilot Chat, click the <strong>Tools</strong> button. You should see <code>calculate_monthly_payment</code> listed. Ask Copilot: <em>"Calculate the monthly payment for a €300,000 loan at 4.1% over 20 years."</em> It will call your tool and return the result.</p></div>
+        </div>
+
+        <details class="hood">
+          <summary><span class="tw">▸</span>What did FastMCP do behind the scenes?</summary>
+          <div class="hood-body"><p>FastMCP turned your function signature and docstring into instructions the model understands. If you write <code>principal: float</code>, the model knows it's a number. If you say "Loan amount in euros", the model knows what it means. <strong>Write clear names and descriptions, and the model will call your tool correctly.</strong> Write vague ones, and it will call it wrong.</p></div>
+        </details>
+
+        <div class="complete-row"><label><input type="checkbox" data-step="1"> Mark step complete</label></div>
+      </section>
+
+      <!-- STEP 2 -->
+      <section class="step" id="step-2">
+        <div class="step-head"><span class="step-num t-tool">02</span><span class="chip tool">Model-controlled</span></div>
+        <h2>A second tool — and why you don't orchestrate</h2>
+
+        <div class="why tool">
+          <div class="why-label">Why add a second one</div>
+          <p>A server has <strong>many</strong> tools, and the model can call them in any order it wants. You don't tell the model which tool to call next — you just provide good tools with clear descriptions, and the model figures out the sequence on its own.</p>
+        </div>
+
+        <div class="code">
+          <div class="code-bar"><span class="code-file"><b>server.py</b> · add after the first tool</span><button class="copy">Copy</button></div>
+<pre><code><span class="dec">@mcp.tool</span>
+<span class="kw">def</span> <span class="fn">affordability_check</span>(
+    monthly_payment: <span class="kw">float</span>,
+    gross_monthly_income: <span class="kw">float</span>,
+) -> <span class="kw">dict</span>:
+    <span class="st">"""Check whether a monthly payment fits a debt-to-income limit.
+
+    Args:
+        monthly_payment: Proposed monthly housing cost in euros.
+        gross_monthly_income: Gross monthly income in euros.
+
+    Returns:
+        The debt-to-income ratio and whether it stays within the limit.
+    """</span>
+    ratio = monthly_payment / gross_monthly_income
+    <span class="kw">return</span> {
+        <span class="st">"dti_ratio"</span>: <span class="fn">round</span>(ratio, 3),
+        <span class="st">"max_allowed"</span>: MAX_DTI_RATIO,
+        <span class="st">"within_limit"</span>: ratio <= MAX_DTI_RATIO,
+    }</code></pre>
+        </div>
+
+        <div class="checkpoint">
+          <div class="ico">✓</div>
+          <div><span class="ct-label">Checkpoint</span><p>In Copilot Chat, ask: <em>"Can someone earning €5,000/month afford €380,000 over 30 years at 4.35%?"</em> Watch Copilot call <code>calculate_monthly_payment</code> first, then <code>affordability_check</code> — by itself, in order, without you telling it which tool to use.</p></div>
+        </div>
+
+        <details class="hood">
+          <summary><span class="tw">▸</span>Where a side-effecting tool would live</summary>
+          <div class="hood-body"><p>Both tools here are pure computations. A tool that <em>changes</em> something — logging an advice request to an internal system, say — would sit right alongside them. That side-effecting nature is exactly what separates a tool from a resource, and it's where audit logging and access control attach in production. Hold that thought for Step 05.</p></div>
+        </details>
+
+        <div class="complete-row"><label><input type="checkbox" data-step="2"> Mark step complete</label></div>
+      </section>
+
+      <!-- STEP 3 -->
+      <section class="step" id="step-3">
+        <div class="step-head"><span class="step-num t-resource">03</span><span class="chip resource">App-controlled</span></div>
+        <h2>Resources — read-only context</h2>
+
+        <div class="why resource">
+          <div class="why-label">Why this is a resource, not a tool</div>
+          <p>Think of a policy document at a real bank. Nobody asks the model to <em>"decide whether to look up the lending rules"</em> — you hand it the document before it starts. That's exactly what a resource is: <strong>you choose when to make it available; the model just reads it</strong>. A tool is something the model calls on its own initiative. A resource is background context you load.</p>
+        </div>
+
+        <p>Add a single resource that exposes the bank's lending policy as a readable document — products, current rates, and eligibility rules all in one place. An advisor attaches it at the start of a conversation and the model has everything it needs before it writes a single word.</p>
+
+        <div class="code">
+          <div class="code-bar"><span class="code-file"><b>server.py</b> · add after the tools</span><button class="copy">Copy</button></div>
+<pre><code><span class="dec">@mcp.resource</span>(<span class="st">"docs://lending-policy"</span>)
+<span class="kw">def</span> <span class="fn">lending_policy</span>() -> <span class="kw">str</span>:
+    <span class="st">"""Bank lending policy: products, rates, and eligibility rules (synthetic).
+
+    Include this resource as context before advising a client.
+    The model reads it — you decide when to make it available.
+    """</span>
+    <span class="kw">return</span> (
+        <span class="st">"MORTGAGE LENDING POLICY (synthetic data)\n"</span>
+        <span class="st">"=========================================\n\n"</span>
+        <span class="st">"Current products and rates:\n"</span>
+        <span class="st">"  annuity 10 year fixed : 3.65%\n"</span>
+        <span class="st">"  annuity 20 year fixed : 4.10%\n"</span>
+        <span class="st">"  annuity 30 year fixed : 4.35%\n"</span>
+        <span class="st">"  linear 20 year fixed  : 4.05%\n"</span>
+        <span class="st">"  variable rate         : 4.80%\n\n"</span>
+        <span class="st">"Eligibility rules:\n"</span>
+        <span class="st">"  Max debt-to-income ratio : 30% of gross monthly income\n"</span>
+        <span class="st">"  Max loan-to-value        : 100% first-time buyers, 90% otherwise\n"</span>
+        <span class="st">"  NHG guarantee up to      : €435,000\n"</span>
+        <span class="st">"  Max age at end of term   : 75 years\n"</span>
+        <span class="st">"  Stress test rate         : 5.0%\n\n"</span>
+        <span class="st">"Product guide:\n"</span>
+        <span class="st">"  Annuity  – equal monthly payments for the full term\n"</span>
+        <span class="st">"  Linear   – decreasing payments (higher at start, lower at end)\n"</span>
+        <span class="st">"  Variable – payment moves with the market rate"</span>
+    )</code></pre>
+        </div>
+
+        <div class="checkpoint">
+          <div class="ico">✓</div>
+          <div><span class="ct-label">Checkpoint</span><p>In Copilot Chat, click the paperclip (<strong>Attach Context</strong>) icon → <strong>MCP Resource</strong> → select <code>docs://lending-policy</code>. Then ask: <em>"What mortgage products are available and what are the current rates?"</em> The model reads the policy document and answers — no tool call, no function execution.</p></div>
+        </div>
+
+        <details class="hood">
+          <summary><span class="tw">▸</span>Why is this obviously not a tool?</summary>
+          <div class="hood-body"><p>Imagine asking: <em>"Should the model decide whether to read the bank's policy manual?"</em> Of course not — you always want it to have the manual. Making it a tool would mean the model first has to decide: <em>"Do I need to look this up?"</em> That wastes a round-trip and might get skipped entirely. A resource is context you attach. The model reads it. Done.</p></div>
+        </details>
+
+        <div class="complete-row"><label><input type="checkbox" data-step="3"> Mark step complete</label></div>
+      </section>
+
+      <!-- STEP 4 -->
+      <section class="step" id="step-4">
+        <div class="step-head"><span class="step-num t-prompt">04</span><span class="chip prompt">User-controlled</span></div>
+        <h2>The prompt — where it all comes together</h2>
+
+        <div class="why prompt">
+          <div class="why-label">Why add a prompt?</div>
+          <p>A <strong>prompt</strong> is a workflow a person starts deliberately, like a slash-command in a chat app. It's where you tie tools and resources together into one repeatable task. You say: "First read the rate, then calculate the payment, then check affordability, then give advice." The model follows that sequence every time. Without the prompt, the model might skip a step or do things in the wrong order.</p>
+        </div>
+
+        <div class="orch">
+          <div class="orch-row"><div class="orch-node prompt"><span class="tag">Prompt</span>mortgage_advice</div><span class="orch-arrow">— a person triggers it</span></div>
+          <div class="orch-row"><div class="orch-node resource"><span class="tag">Resource</span>docs://lending-policy</div><span class="orch-desc">→ step 1: read rates and eligibility rules</span></div>
+          <div class="orch-row"><div class="orch-node tool"><span class="tag">Tool</span>calculate_monthly_payment</div><span class="orch-desc">→ step 2: compute the payment</span></div>
+          <div class="orch-row"><div class="orch-node tool"><span class="tag">Tool</span>affordability_check</div><span class="orch-desc">→ step 3: test against income</span></div>
+          <div class="orch-row"><div class="orch-node" style="border-style:dashed">📄 Structured advice</div><span class="orch-desc">→ step 4: the model writes it up</span></div>
+        </div>
+
+        <div class="code">
+          <div class="code-bar"><span class="code-file"><b>server.py</b> · add after the resources</span><button class="copy">Copy</button></div>
+<pre><code><span class="dec">@mcp.prompt</span>
+<span class="kw">def</span> <span class="fn">mortgage_advice</span>(
+    client_name: <span class="kw">str</span>,
+    loan_amount: <span class="kw">float</span>,
+    term_years: <span class="kw">int</span>,
+    gross_monthly_income: <span class="kw">float</span>,
+    product: <span class="kw">str</span>,
+) -> <span class="kw">str</span>:
+    <span class="st">"""Guided mortgage-advice workflow for an advisor."""</span>
+    <span class="kw">return</span> (
+        <span class="st">f"You are a mortgage advisor preparing advice for {client_name}.\n\n"</span>
+        <span class="st">f"Follow these steps:\n"</span>
+        <span class="st">f"1. Read the resource `docs://lending-policy` to get the rate for '{product}' and the eligibility rules.\n"</span>
+        <span class="st">f"2. Call `calculate_monthly_payment` with principal={loan_amount}, "</span>
+        <span class="st">f"the rate from step 1, and term_years={term_years}.\n"</span>
+        <span class="st">f"3. Call `affordability_check` with that payment and "</span>
+        <span class="st">f"gross_monthly_income={gross_monthly_income}.\n"</span>
+        <span class="st">f"4. Write a short, structured advice: product and rate, monthly "</span>
+        <span class="st">f"payment, total interest, and whether it is affordable. If it is "</span>
+        <span class="st">f"not within the limit, suggest one alternative.\n\n"</span>
+        <span class="st">f"Keep the tone factual. All figures are indicative."</span>
+    )</code></pre>
+        </div>
+
+        <div class="checkpoint">
+          <div class="ico">✓</div>
+          <div><span class="ct-label">Checkpoint</span><p>In Copilot Chat, type <code>/mortgage_advice</code> and fill in the parameters (name, loan amount, term, income, product). Copilot reads the rate, calls both tools, and writes the advice — one trigger, same steps every time.</p></div>
+        </div>
+
+        <details class="hood">
+          <summary><span class="tw">▸</span>Prompt arguments are strings under the hood</summary>
+          <div class="hood-body"><p>The MCP spec passes prompt arguments as strings. FastMCP lets you annotate them with real types (<code>float</code>, <code>int</code>) for a better developer experience and coerces them for you. The return value can be a plain string, as here, or a list of structured messages when you need finer control over roles.</p></div>
+        </details>
+
+        <div class="complete-row"><label><input type="checkbox" data-step="4"> Mark step complete</label></div>
+      </section>
+
+      <!-- STEP 5 -->
+      <section class="step" id="step-5">
+        <div class="step-head"><span class="step-num">05</span></div>
+        <h2>Reflect &amp; ship</h2>
+        <p>You now have a working server with all three types. When you build the next one, just ask one question about each capability: <strong>who decides when it happens?</strong> Is it the model? The app? Or the user? Your answer is your choice.</p>
+
+        <table class="decide">
+          <thead><tr><th>Who decides when it happens?</th><th>It's a</th><th>Use this when</th></tr></thead>
+          <tbody>
+            <tr><td>The AI model<br>(on its own initiative)</td><td><span class="pchip tool">Tool</span></td><td>You want the model to call a function whenever it makes sense</td></tr>
+            <tr><td>The application<br>(you decide what to load)</td><td><span class="pchip resource">Resource</span></td><td>You want to give the model read-only context, like data or a manual</td></tr>
+            <tr><td>A person<br>(they click a button)</td><td><span class="pchip prompt">Prompt</span></td><td>You want a repeatable workflow that starts with a click or slash-command</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Why this design matters</h3>
+        <p>The three types aren't just theory. Each one has different security and audit rules:</p>
+        <div class="govern">
+          <div class="gov tool"><span class="gdot"></span><span><b>Tools</b> — can change things, so you log every call. If the tool deletes data or sends money, you need a record.</span></div>
+          <div class="gov resource"><span class="gdot"></span><span><b>Resources</b> — are just data you hand over. Your only concern is: should this model see this data? Is it private?</span></div>
+          <div class="gov prompt"><span class="gdot"></span><span><b>Prompts</b> — are workflows you control. You can version them, test them, and know exactly what they do.</span></div>
+        </div>
+
+        <h3>Running your server for real</h3>
+        <p>Right now you ran it over <code>stdio</code> — direct pipe to the client. For multiple people to connect, switch to HTTP:</p>
+        <div class="code">
+          <div class="code-bar"><span class="code-file"><b>server.py</b></span><button class="copy">Copy</button></div>
+<pre><code><span class="kw">if</span> __name__ == <span class="st">"__main__"</span>:
+    mcp.<span class="fn">run</span>(transport=<span class="st">"http"</span>)  <span class="cm"># HTTP for multiple clients</span></code></pre>
+        </div>
+        <p>Over HTTP, you can add login (OAuth), track who called what, and manage permissions. That's the next level.</p>
+
+        <h3>Next steps after this lab</h3>
+        <p>You've learned the three building blocks. When you're ready to go deeper: <strong>Tasks</strong> let your server run long operations in the background. <strong>Sampling</strong> lets you use the client's AI model instead of your own. And <strong>HTTP transport</strong> lets multiple clients connect. One step at a time.</p>
+
+        <div class="complete-row"><label><input type="checkbox" data-step="5"> Mark step complete</label></div>
+      </section>
+
+      <!-- REFERENCE -->
+      <section class="end" id="reference">
+        <h2>Reference card</h2>
+        <p>Keep this visible while you build.</p>
+        <div class="controllers">
+          <div class="ctrl tool"><span class="dot"></span><div><div class="name">Tool · <code>@mcp.tool</code></div><div class="desc">A function the AI can call · Works like an action or calculation · Model decides when to use it.</div></div><span class="who">Model</span></div>
+          <div class="ctrl resource"><span class="dot"></span><div><div class="name">Resource · <code>@mcp.resource("uri://…")</code></div><div class="desc">Read-only data or a manual · Works like a reference book · You decide what to hand over.</div></div><span class="who">App</span></div>
+          <div class="ctrl prompt"><span class="dot"></span><div><div class="name">Prompt · <code>@mcp.prompt</code></div><div class="desc">A workflow a person starts · Works like a slash-command · Runs the same steps every time.</div></div><span class="who">User</span></div>
+        </div>
+
+        <details class="hood" style="margin-top:26px">
+          <summary><span class="tw">▸</span>Show the complete server.py</summary>
+          <div class="hood-body">
+            <div class="code" style="margin-top:14px">
+              <div class="code-bar"><span class="code-file"><b>server.py</b> · complete</span><button class="copy">Copy</button></div>
+<pre><code><span class="cm"># /// script</span>
+<span class="cm"># requires-python = "&gt;=3.10"</span>
+<span class="cm"># dependencies = ["fastmcp"]</span>
+<span class="cm"># ///</span>
+<span class="kw">from</span> fastmcp <span class="kw">import</span> FastMCP
+
+mcp = <span class="fn">FastMCP</span>(<span class="st">"rabo-mortgage-advisor"</span>)
+
+MORTGAGE_RATES = {
+    <span class="st">"annuity 10 year fixed"</span>: 3.65, <span class="st">"annuity 20 year fixed"</span>: 4.10,
+    <span class="st">"annuity 30 year fixed"</span>: 4.35, <span class="st">"linear 20 year fixed"</span>: 4.05,
+    <span class="st">"variable rate"</span>: 4.80,
+}
+MAX_DTI_RATIO = 0.30
+
+
+<span class="dec">@mcp.tool</span>
+<span class="kw">def</span> <span class="fn">calculate_monthly_payment</span>(principal: <span class="kw">float</span>, annual_rate_pct: <span class="kw">float</span>, term_years: <span class="kw">int</span>) -> <span class="kw">dict</span>:
+    <span class="st">"""Calculate the monthly mortgage payment."""</span>
+    monthly_rate = annual_rate_pct / 100 / 12
+    n = term_years * 12
+    <span class="kw">if</span> monthly_rate == 0:
+        monthly_payment = principal / n
+    <span class="kw">else</span>:
+        monthly_payment = principal * monthly_rate / (1 - (1 + monthly_rate) ** -n)
+    total_paid = monthly_payment * n
+    <span class="kw">return</span> {<span class="st">"monthly_payment"</span>: <span class="fn">round</span>(monthly_payment, 2),
+            <span class="st">"total_paid"</span>: <span class="fn">round</span>(total_paid, 2),
+            <span class="st">"total_interest"</span>: <span class="fn">round</span>(total_paid - principal, 2)}
+
+
+<span class="dec">@mcp.tool</span>
+<span class="kw">def</span> <span class="fn">affordability_check</span>(monthly_payment: <span class="kw">float</span>, gross_monthly_income: <span class="kw">float</span>) -> <span class="kw">dict</span>:
+    <span class="st">"""Check if a monthly payment is affordable."""</span>
+    ratio = monthly_payment / gross_monthly_income
+    <span class="kw">return</span> {<span class="st">"dti_ratio"</span>: <span class="fn">round</span>(ratio, 3),
+            <span class="st">"max_allowed"</span>: MAX_DTI_RATIO,
+            <span class="st">"within_limit"</span>: ratio <= MAX_DTI_RATIO}
+
+
+<span class="dec">@mcp.resource</span>(<span class="st">"docs://lending-policy"</span>)
+<span class="kw">def</span> <span class="fn">lending_policy</span>() -> <span class="kw">str</span>:
+    <span class="st">"""Bank lending policy: products, rates, and eligibility rules."""</span>
+    <span class="kw">return</span> (
+        <span class="st">"MORTGAGE LENDING POLICY (synthetic data)\n"</span>
+        <span class="st">"Current rates: annuity 10yr 3.65%, 20yr 4.10%, 30yr 4.35%, linear 20yr 4.05%, variable 4.80%\n"</span>
+        <span class="st">"Eligibility: max DTI 30%, max LTV 100% FTB/90%, stress test 5.0%, NHG up to €435,000"</span>
+    )
+
+
+<span class="dec">@mcp.prompt</span>
+<span class="kw">def</span> <span class="fn">mortgage_advice</span>(client_name: <span class="kw">str</span>, loan_amount: <span class="kw">float</span>, term_years: <span class="kw">int</span>,
+                    gross_monthly_income: <span class="kw">float</span>, product: <span class="kw">str</span>) -> <span class="kw">str</span>:
+    <span class="st">"""Give mortgage advice: rate, payment, affordability."""</span>
+    <span class="kw">return</span> (
+        <span class="st">f"You are a mortgage advisor preparing advice for {client_name}.\n\n"</span>
+        <span class="st">f"Follow these steps:\n"</span>
+        <span class="st">f"1. Read the resource `docs://lending-policy` to get the rate for '{product}' and the eligibility rules.\n"</span>
+        <span class="st">f"2. Call `calculate_monthly_payment` with principal={loan_amount}, the rate from step 1, term_years={term_years}.\n"</span>
+        <span class="st">f"3. Call `affordability_check` with that payment and gross_monthly_income={gross_monthly_income}.\n"</span>
+        <span class="st">f"4. Write a short, structured advice; suggest one alternative if it is not within the limit.\n\n"</span>
+        <span class="st">f"Keep the tone factual. All figures are indicative."</span>
+    )
+
+
+<span class="kw">if</span> __name__ == <span class="st">"__main__"</span>:
+    mcp.<span class="fn">run</span>()</code></pre>
+            </div>
+          </div>
+        </details>
+      </section>
+
+    </div></main>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* safe storage: persists when opened as a standalone file,
+     silently falls back to memory anywhere it's blocked. */
+  var store = (function(){
+    var mem = {};
+    try{
+      var k="__mcp_probe__"; window.localStorage.setItem(k,"1"); window.localStorage.removeItem(k);
+      return {
+        get:function(key){ try{return window.localStorage.getItem(key);}catch(e){return mem[key]||null;} },
+        set:function(key,v){ try{window.localStorage.setItem(key,v);}catch(e){mem[key]=v;} }
+      };
+    }catch(e){
+      return { get:function(key){return mem[key]||null;}, set:function(key,v){mem[key]=v;} };
+    }
+  })();
+
+  var KEY = "rabo-mcp-lab-progress";
+  var TOTAL = 6;
+
+  /* ---- copy buttons ---- */
+  document.querySelectorAll(".copy").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var pre = btn.closest(".code").querySelector("pre");
+      var text = pre.innerText;
+      navigator.clipboard.writeText(text).then(function(){
+        var old = btn.textContent;
+        btn.textContent = "Copied"; btn.classList.add("copied");
+        setTimeout(function(){ btn.textContent = old; btn.classList.remove("copied"); }, 1400);
+      }).catch(function(){
+        var old = btn.textContent; btn.textContent = "Select all"; 
+        setTimeout(function(){ btn.textContent = old; }, 1400);
+      });
+    });
+  });
+
+  /* ---- progress / completion ---- */
+  var saved = {};
+  try{ saved = JSON.parse(store.get(KEY) || "{}") || {}; }catch(e){ saved = {}; }
+
+  var boxes = document.querySelectorAll('input[data-step]');
+  var navLinks = document.querySelectorAll('#nav a');
+
+  function navFor(step){
+    return document.querySelector('#nav a[href="#step-'+step+'"]');
+  }
+
+  function render(){
+    var done = 0;
+    boxes.forEach(function(box){
+      var s = box.getAttribute("data-step");
+      var on = !!saved[s];
+      box.checked = on;
+      var link = navFor(s);
+      if(link){ link.classList.toggle("completed", on); }
+      if(on) done++;
+    });
+    var pct = Math.round(done / TOTAL * 100);
+    document.getElementById("progBar").style.width = pct + "%";
+    document.getElementById("pctText").textContent = pct + "%";
+    var tb = document.getElementById("tbProg"); if(tb) tb.style.width = pct + "%";
+    var tbp = document.getElementById("tbPct"); if(tbp) tbp.textContent = pct + "%";
+  }
+
+  boxes.forEach(function(box){
+    box.addEventListener("change", function(){
+      var s = box.getAttribute("data-step");
+      if(box.checked){ saved[s] = true; } else { delete saved[s]; }
+      store.set(KEY, JSON.stringify(saved));
+      render();
+    });
+  });
+  render();
+
+  /* ---- scrollspy ---- */
+  var sections = Array.prototype.map.call(navLinks, function(a){
+    var id = a.getAttribute("href").slice(1);
+    return { a:a, el:document.getElementById(id) };
+  }).filter(function(x){ return x.el; });
+
+  var spy = function(){
+    var pos = window.scrollY + 140;
+    var current = sections[0];
+    sections.forEach(function(s){ if(s.el.offsetTop <= pos) current = s; });
+    navLinks.forEach(function(a){ a.classList.remove("active"); });
+    if(current) current.a.classList.add("active");
+  };
+  var ticking = false;
+  window.addEventListener("scroll", function(){
+    if(!ticking){ window.requestAnimationFrame(function(){ spy(); ticking=false; }); ticking=true; }
+  });
+  spy();
+
+  /* ---- mobile nav ---- */
+  var side = document.getElementById("side");
+  var scrim = document.getElementById("scrim");
+  var menuBtn = document.getElementById("menuBtn");
+  function openNav(){ side.classList.add("open"); scrim.classList.add("show"); }
+  function closeNav(){ side.classList.remove("open"); scrim.classList.remove("show"); }
+  if(menuBtn){ menuBtn.addEventListener("click", openNav); }
+  if(scrim){ scrim.addEventListener("click", closeNav); }
+  navLinks.forEach(function(a){ a.addEventListener("click", closeNav); });
+})();
+</script>
+</body>
+</html>

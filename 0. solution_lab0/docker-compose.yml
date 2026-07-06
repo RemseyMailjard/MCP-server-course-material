@@ -1,0 +1,8 @@
+services:
+  mcp-server:
+    build: .
+    container_name: rabo-mortgage-advisor
+    ports:
+      - "8000:8000"
+    # Keeps the server running: restarts on crash and on host reboot.
+    restart: always
